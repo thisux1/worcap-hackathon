@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.nc
+*.parquet
+submissions/*.csv
+kaggle_assets2/nmme/
+*.log
+/tmp/
