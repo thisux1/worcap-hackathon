@@ -166,15 +166,26 @@ def eval_year(store, alvo, model, test_year, anchor_gap=1):
     return np.sqrt(e1 / n), np.sqrt(e2 / n)
 
 
-def eval_year_preds(store, alvo, model, test_year, anchor_gap=1):
+def eval_year_preds(store, alvo, model, test_year, anchor_gap=1, n34=None):
     """Previsoes do ano por mes sob regime de ancora (base s1 nao-clipada,
-    corr s2, y, clim). Permite varrer peso de blend e damping offline."""
+    corr s2, y, clim). Permite varrer peso de blend e damping offline.
+
+    Cada dict tambem leva 'i' (idx do mes-origem em store.t_idx), 'tm'
+    (mes-calendario alvo) e 'n34' (nino34 no mes-origem) — insumos do
+    pos-processamento ENSO (worcap.enso). n34 pode vir do parametro
+    (array/Series alinhado a store.t_idx) ou de model["n34"]; sem nenhum
+    dos dois fica NaN. Default beta=0 no sweep => baseline inalterado.
+    """
     t_idx = store.t_idx
     tgt_month = t_idx + pd.offsets.MonthBegin(1)
     ty, tm = tgt_month.year.values, tgt_month.month.values
     c = model["clim"].values
     s = np.maximum(model["sigma"].values, 1e-3)
     Xn, W, W2 = model["Xn"], model["W"], model["W2"]
+    if n34 is None:
+        n34 = model.get("n34")
+    if isinstance(n34, pd.Series):
+        n34 = n34.reindex(t_idx).values
     anchor = int(np.where(
         t_idx == pd.Timestamp(f"{test_year-anchor_gap}-12-01"))[0][0])
     Y = alvo.values
@@ -188,7 +199,8 @@ def eval_year_preds(store, alvo, model, test_year, anchor_gap=1):
         X2 = x2_month(store, i, anchor, lag, model.get("nmme"))
         corr = np.einsum("pk,pk->p", X2, W2)
         out.append({"base": base, "corr": corr, "y": Y[i].ravel(),
-                    "clim": c[tm[i] - 1].ravel()})
+                    "clim": c[tm[i] - 1].ravel(), "i": i, "tm": int(tm[i]),
+                    "n34": float(n34[i]) if n34 is not None else np.nan})
     return out
 
 
