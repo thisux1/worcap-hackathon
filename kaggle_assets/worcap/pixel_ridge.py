@@ -205,7 +205,8 @@ def eval_year_rec(store, alvo, model, test_year):
     Xn, W, W2 = model["Xn"], model["W"], model["W2"]
     anchor = int(np.where(
         t_idx == pd.Timestamp(f"{test_year-2}-12-01"))[0][0])
-    clim_full = model["clim"].values
+    clim_full = (store.sums["tp"]
+                 / np.maximum(store.cnts["tp"], 1)[:, None, None])
     Y = alvo.values
     tp_prev = store.raw("tp", anchor).ravel()      # obs real dez(Y-2)
     e2 = n = 0.0
