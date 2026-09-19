@@ -1,0 +1,13 @@
+{
+  "id": "thisux1/worcap-exp-robust",
+  "title": "worcap-exp-robust",
+  "code_file": "kernel.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_internet": false,
+  "dataset_sources": ["thisux1/worcap-assets2"],
+  "competition_sources": ["previsao-climatica-de-precipitacao-sobre-a-america-do-sul"],
+  "kernel_sources": []
+}
