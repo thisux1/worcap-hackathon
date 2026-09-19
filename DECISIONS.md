@@ -266,3 +266,22 @@ kernel v22 mostrar γ*<1 específico do regime lag-longo. **scripts/report.py** 
 6 painéis (submits, LB, OOF-vs-LB, damping, blend, status) → report.png.
 
 *Última atualização: 19/09 01:05 UTC — melhor LB: 1.69816 (5º). Kernel v22 rodando.*
+
+### Sessão 9 — Kernel v26 + sweeps: 3 hipóteses mortas, config confirmado
+
+**Recursão (R2): MORTA** pelo kill-criterion pré-registrado. gap2 vs rec por ano:
+1983 −0.004, 1988 +0.000, 1997 +0.003, 1998 +0.008, 2005 −0.006, 2010 −0.007, 2015 +0.010
+→ média −0.0005 (ruído), só 3/7 melhoram, degradações até +0.010. Critério (≥0.003 e ≥6/7) falhou.
+
+**Janela de climatologia: MORTA.** full é melhor — 30a: +0.026 pior, 20a: +0.046 pior, trend ≡ full.
+Registro completo 1940-2022 vence (mais amostras ENSO > adaptação de tendência fraca).
+
+**w ótimo diverge OOF vs LB:** OOF prefere w→0.4 (mais v2) em todo o grid; LB prefere 0.65 (mais ridge).
+V2 ajuda "em média" mas prejudica em regime extremo (2023). LB é a verdade pro público — mantemos 0.65.
+
+**γ=1.0 ótimo em TODO o grid OOF** (γ<1 piora em todo w, ambos gaps) — damping morto nas duas métricas.
+
+**Lag ≠ fator:** RMSE lag 13-24 ≈ lag 1-12 (erro dominado por mês-calendário, não staleness) →
+splice por lag sem fundamento; tp_lo contribui pouco em qualquer lag.
+
+*19/09 ~05:30 UTC — exp-lambda rodando (λ1×λ2). Próximo: batch 2 (winsorize ±4σ, X2 padronizado, γ>1 em anos-análogos, clim ENSO-condicional).*

@@ -45,11 +45,11 @@ for yr in YEARS:
         for l2 in LAM2S:
             m = fit_pixel_ridge(store, alvo, Xraw, tgt_month, LOOKUP[yr],
                                 l1, l2, use_nmme=False)
-            r1, r2 = eval_year(store, alvo, m, yr, 1)
-            q1, q2 = eval_year(store, alvo, m, yr, 2)
-            rows[(yr, l1, l2)] = (r1[0], r1[1], q1[0], q2[1])
+            r1 = eval_year(store, alvo, m, yr, 1)
+            q1 = eval_year(store, alvo, m, yr, 2)
+            rows[(yr, l1, l2)] = (r1[0], r1[1], q1[0], q1[1])
             print(f"{yr} l1={l1:g} l2={l2:g} | gap1 s1 {r1[0]:.4f} "
-                  f"s12 {r1[1]:.4f} | gap2 s1 {q1[0]:.4f} s12 {q2[1]:.4f} "
+                  f"s12 {r1[1]:.4f} | gap2 s1 {q1[0]:.4f} s12 {q1[1]:.4f} "
                   f"| {time.time()-t0:.0f}s", flush=True)
 
 print("\n=== MEDIA gap1 (s1 / s1+2) ===")
