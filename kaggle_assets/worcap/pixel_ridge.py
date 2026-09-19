@@ -81,9 +81,77 @@ def _nmme_map(train_years):
             for i in range(len(t))}
 
 
+def _grid_shape(store):
+    """(n_lat, n_lon) da grade oficial."""
+    return store.das["tp"].shape[1:]
+
+
+def smooth_w2(store, W2, size=5):
+    """Media por vizinhanca de cada mapa de coeficiente (npix,k).
+
+    Mesmo kernel do feature `_n` (gbm_data.nbhd): uniform_filter size=5,
+    mode="nearest" — consistencia com o smooth usado nas features.
+    """
+    nlat, nlon = _grid_shape(store)
+    return np.stack([nbhd(W2[:, k].reshape(nlat, nlon), size=size).ravel()
+                     for k in range(W2.shape[1])], axis=1)
+
+
+def region_mean_w2(store, W2):
+    """Media de W2 dentro das macro-regioes de features.REGIONS (npix,k).
+
+    Pixel em >1 caixa recebe a media das medias regionais; pixel fora de
+    todas recebe a media global da coluna.
+    """
+    from .features import REGIONS
+    latg = np.repeat(store.lat, len(store.lon))
+    long = np.tile(store.lon, len(store.lat))
+    acc = np.zeros_like(W2)
+    cnt = np.zeros(store.npix, np.int32)
+    for latS, latN, lonW, lonE in REGIONS.values():
+        m = (latg >= latS) & (latg <= latN) & (long >= lonW) & (long <= lonE)
+        if m.any():
+            acc[m] += W2[m].mean(0)
+            cnt[m] += 1
+    out = np.broadcast_to(W2.mean(0), W2.shape).copy()
+    ok = cnt > 0
+    out[ok] = acc[ok] / cnt[ok, None]
+    return out
+
+
+def pool_w2(store, W2, alpha=None, regional=None, intercept=True, size=5):
+    """Partial pooling dos coeficientes stage-2 (Max-and-Smooth).
+
+    alpha in [0,1]:  W2' = alpha*W2 + (1-alpha)*vizinhanca(W2)
+        (0 = mapa todo suavizado, 1 = identidade).
+    regional in [0,1]: shrink adicional para a media da macro-regiao,
+        aplicado sobre o resultado do pooling espacial; o alvo regional
+        e' computado sobre o W2 cru:  W2'' = r*W2' + (1-r)*R(W2).
+    intercept=True encolhe tambem a coluna de bias (k=0). Justificativa:
+        o intercepto e' o unico coeficiente NAO penalizado no ridge
+        (P[0,0]=0) -> e' o mais ruidoso e o vies residual e' espacialmente
+        coerente; Max-and-Smooth canonico suaviza todos os mapas.
+        intercept=False preserva W2[:,0] (ablation/diagnostico).
+    """
+    out = W2
+    if alpha is not None and alpha < 1:
+        out = alpha * W2 + (1 - alpha) * smooth_w2(store, W2, size)
+    if regional is not None:
+        out = regional * out + (1 - regional) * region_mean_w2(store, W2)
+    if not intercept and out is not W2:
+        out = out.copy()
+        out[:, 0] = W2[:, 0]
+    return out
+
+
 def fit_pixel_ridge(store, alvo, Xraw, tgt_month, train_years, lam1, lam2,
-                    seed=0, lag_aug=True, use_nmme=False):
-    """Stage1 (ridge compartilhado) + stage2 (ridge por pixel no residuo)."""
+                    seed=0, lag_aug=True, use_nmme=False,
+                    pool_alpha=None, pool_regional=None, pool_intercept=True):
+    """Stage1 (ridge compartilhado) + stage2 (ridge por pixel no residuo).
+
+    pool_alpha/pool_regional (None = off): partial pooling espacial de W2
+    via pool_w2 — o W2 cru e' preservado em model["W2_raw"].
+    """
     rng = np.random.default_rng(seed)
     t_idx = store.t_idx
     ty, tm = tgt_month.year.values, tgt_month.month.values
@@ -116,8 +184,13 @@ def fit_pixel_ridge(store, alvo, Xraw, tgt_month, train_years, lam1, lam2,
     P = np.eye(k2) * lam2
     P[0, 0] = 0.0
     W2 = np.linalg.solve(G + P, b[..., None])[..., 0]
-    return {"Xn": Xn, "W": W, "mu": mu, "sd": sd,
-            "W2": W2, "clim": clim, "sigma": sigma, "nmme": nmme}
+    model = {"Xn": Xn, "W": W, "mu": mu, "sd": sd,
+             "W2": W2, "clim": clim, "sigma": sigma, "nmme": nmme}
+    if pool_alpha is not None or pool_regional is not None:
+        model["W2_raw"] = W2
+        model["W2"] = pool_w2(store, W2, pool_alpha, pool_regional,
+                              pool_intercept)
+    return model
 
 
 def x2_test(store, test_ds, j, om_, lag, nmme=None):
@@ -166,15 +239,26 @@ def eval_year(store, alvo, model, test_year, anchor_gap=1):
     return np.sqrt(e1 / n), np.sqrt(e2 / n)
 
 
-def eval_year_preds(store, alvo, model, test_year, anchor_gap=1):
+def eval_year_preds(store, alvo, model, test_year, anchor_gap=1, n34=None):
     """Previsoes do ano por mes sob regime de ancora (base s1 nao-clipada,
-    corr s2, y, clim). Permite varrer peso de blend e damping offline."""
+    corr s2, y, clim). Permite varrer peso de blend e damping offline.
+
+    Cada dict tambem leva 'i' (idx do mes-origem em store.t_idx), 'tm'
+    (mes-calendario alvo) e 'n34' (nino34 no mes-origem) — insumos do
+    pos-processamento ENSO (worcap.enso). n34 pode vir do parametro
+    (array/Series alinhado a store.t_idx) ou de model["n34"]; sem nenhum
+    dos dois fica NaN. Default beta=0 no sweep => baseline inalterado.
+    """
     t_idx = store.t_idx
     tgt_month = t_idx + pd.offsets.MonthBegin(1)
     ty, tm = tgt_month.year.values, tgt_month.month.values
     c = model["clim"].values
     s = np.maximum(model["sigma"].values, 1e-3)
     Xn, W, W2 = model["Xn"], model["W"], model["W2"]
+    if n34 is None:
+        n34 = model.get("n34")
+    if isinstance(n34, pd.Series):
+        n34 = n34.reindex(t_idx).values
     anchor = int(np.where(
         t_idx == pd.Timestamp(f"{test_year-anchor_gap}-12-01"))[0][0])
     Y = alvo.values
@@ -188,7 +272,8 @@ def eval_year_preds(store, alvo, model, test_year, anchor_gap=1):
         X2 = x2_month(store, i, anchor, lag, model.get("nmme"))
         corr = np.einsum("pk,pk->p", X2, W2)
         out.append({"base": base, "corr": corr, "y": Y[i].ravel(),
-                    "clim": c[tm[i] - 1].ravel()})
+                    "clim": c[tm[i] - 1].ravel(), "i": i, "tm": int(tm[i]),
+                    "n34": float(n34[i]) if n34 is not None else np.nan})
     return out
 
 
@@ -239,7 +324,7 @@ def eval_year_rec(store, alvo, model, test_year):
 
 
 def submit(store, alvo, Xraw, tgt_month, df, lam1, lam2, tag,
-           all_years=True, seed=0, use_nmme=False):
+           all_years=True, seed=0, use_nmme=False, pool_alpha=None):
     """Fit em todos os anos (ou final_fit_years) + CSV dos 24 alvos."""
     from .folds import final_fit_years
     from .config import TRAIN_START, TRAIN_END, SUB_DIR
@@ -247,7 +332,8 @@ def submit(store, alvo, Xraw, tgt_month, df, lam1, lam2, tag,
     years = (list(range(TRAIN_START, TRAIN_END + 1)) if all_years
              else final_fit_years())
     model = fit_pixel_ridge(store, alvo, Xraw, tgt_month, years,
-                            lam1, lam2, seed=seed, use_nmme=use_nmme)
+                            lam1, lam2, seed=seed, use_nmme=use_nmme,
+                            pool_alpha=pool_alpha)
     test = xr.open_dataset(DATA / TEST_FILE)
     T = pd.DatetimeIndex(test.time.values)
     orig = pd.DatetimeIndex(test.time_origem.values)
