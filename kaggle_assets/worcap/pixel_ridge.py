@@ -430,7 +430,8 @@ def submit(store, alvo, Xraw, tgt_month, df, lam1, lam2, tag,
                      x2_stats=_x2_stats(model))
         off = 0.0
         if phase_map is not None:
-            ph = phase_of(n34.get(pd.Timestamp(orig[j]), np.nan))
+            ph = phase_of(n34.get(pd.Timestamp(orig[j]), np.nan),
+                          enso_thr, -enso_thr)
             off = enso_offset(phase_map, c, enso_beta,
                               ph)[t.month - 1].ravel()
         yh = (c[t.month - 1].ravel() + s[t.month - 1].ravel() * z1

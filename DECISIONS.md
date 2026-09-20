@@ -317,3 +317,37 @@ splice por lag sem fundamento; tp_lo contribui pouco em qualquer lag.
 - Proibido re-tunar β/thr/γ no LB (hill-climb no regime errado)
 - γ decide-se por gap2-OOF + C−A, nunca pelo público isolado
 - Finais divergem SÓ na metade 2024 (score final = privado; linhas 2023 irrelevantes ao prêmio)
+
+### Sessão 11 — LB confirma offset ENSO (−0.0123); γ global morto; splices privados
+
+*20/09 ~23:00 UTC — 5/5 submits usados.*
+
+**Resultados LB público (vs baseline blend65/35 = 1.69816):**
+
+| submit | score | Δ | leitura |
+|---|---|---|---|
+| blend+enso β=0.25/thr=0.8 (A) | **1.68586** | **−0.0123** | ENSO CONFIRMADO (gate −0.004 passou 3×) |
+| A + γ=1.10 global (C) | 1.68847 | −0.0097 | γ global custa +0.0026 → morto no público |
+| blend+enso β=0.15 (D) | 1.68963 | −0.0085 | dose-resposta monotônica |
+| splice[A-2023‖ridge_all+enso-2024] (S1) | 1.68586 | =A | mecânica splice validada (público idêntico) |
+| splice[A-2023‖A+γ1.10-quente-2024] (S2) | 1.68586 | =A | idem |
+
+**Kernel gphase — γ por fase ENSO (w=0.65, OOF):**
+QUENTE: γ>1 melhora monotônico até 1.2 (1.8663 vs 1.8753); NEUTRO/FRIO: γ=1.0 ótimo.
+Por ano: 1983 −0.018, 1997 −0.016, 1998 −0.017; 1988/2005/2010 ~0; 2015 prefere γ<1.
+→ γ não morreu, é **condicional à fase**; aposta privada S2 = γ só em meses quentes de 2024 (decay ≈ 1983/1998).
+
+**Auditoria por 3 subagentes (sessão de validação):**
+- CSVs submetidos verificados por amostragem direta — splice correto (jan-mai/24 inflados, jun-dez = A)
+- Bug residual: kaggle_assets/pixel_ridge.py sem enso_thr → sincronizado, dataset v12
+- Ordem γ×offset em S1 deviava da registrada (γ inflava offset ×1.1) → regenerado splice_A_gwarm24_v2
+- Física: offset sub-estima amplitude real de 2023-24 (costero+Atlântico ausentes do n34) → headroom positivo
+- N por célula (mês,fase): 8-22; extremos ±9 = Chocó/costa Equador (físico)
+
+**Lacuna identificada:** 2016 (decay do evento 2015-16, o mais análogo a 2023-24) nunca entrou no eval → gphase v2 rodando com 2016+1992. Decisivo para S2.
+
+**β por ano (kernel enso, thr=0.8):** anos El Niño/decay querem β~0.4-0.5 (1983: −0.054 em β0.5); agregado 0.25 é puxado por anos frios. Em 2024 só meses quentes disparam → β=0.3-0.35 no lado-2024 defensável via OOF-análogo.
+
+**Fila amanhã (5 slots):** γ-quente full-file em A (mede jul-dez/23), ridge_all+offset full-file (valida S1-2024), S2 ordem-corrigida, splice β0.35-2024, reserva.
+
+*Nova melhor LB: 1.68586 (~6º nominal). final1 provável = A; final2 entre S1/S2.*
