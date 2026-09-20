@@ -285,3 +285,35 @@ V2 ajuda "em média" mas prejudica em regime extremo (2023). LB é a verdade pro
 splice por lag sem fundamento; tp_lo contribui pouco em qualquer lag.
 
 *19/09 ~05:30 UTC — exp-lambda rodando (λ1×λ2). Próximo: batch 2 (winsorize ±4σ, X2 padronizado, γ>1 em anos-análogos, clim ENSO-condicional).*
+
+### Sessão 10 — Bateria de experimentos (kernels exp-*) + regra pré-registrada das finais
+
+*20/09 ~01:30 UTC. Resultados de 4 kernels paralelos sobre o branch `exp/integ`.*
+
+**Resultados (OOF LOYO, média 7 anos, gap1/gap2):**
+
+| alavanca | resultado | veredito |
+|---|---|---|
+| **Offset ENSO-condicional** (β·[clim_fase−clim_full], fase por nino34 do mês-origem) | β=0.25/thr=0.8: 1.7499 gap1 / 1.7519 gap2 vs baseline 1.7593/1.7615 (−0.009); por ano: 1983 −0.037, 97 −0.015, 98 −0.018, 2015 −0.011, neutros ~0 | **ADOTADO** — único lever que melhora concentrado no regime-alvo sem custo nos neutros |
+| **γ=1.10 inflação** (w=0.65) | −0.003 gap1 e gap2 (grid 0.9–1.2, ótimo interior) | candidato — decide-se pelo LB + gap2 |
+| λ1 sweep | 1000 confirmado ótimo | mantém |
+| λ2=30 (vs 300) | −0.002, ótimo na BORDA do grid, só 4 anos | suspenso — grid estendido antes de qualquer slot |
+| winsorize ±4σ | +0.003 | morto |
+| x2std | +0.003 | morto |
+| pooling W2 (α<1) | α=1.0 ótimo | morto |
+| recursão, damping, clim-window, lag-splice, NMME | — | mortos em sessões anteriores |
+
+**Bug corrigido em submit():** `phase_of()` não recebia `enso_thr` — origens jan/fev-2023 seriam "frias" (La Niña) no path wired vs "neutras" no script. Fix: `phase_of(v, enso_thr, -enso_thr)`.
+
+**Ordem pós-hoc fixada:** `damp(γ) → enso_offset(β)` — offset mantém magnitude β calibrada (γ não infla o offset).
+
+**Extremos do offset verificados:** |Δ|max ~35 mm/dia só na costa Pacífico Equador/Chocó (clim 30-67) — assinatura física canônica El Niño, coerente espacialmente. N=8-22 anos/célula (mês,fase).
+
+**REGRA PRÉ-REGISTRADA de seleção das finais (registrada ANTES de ver os scores do lote A/C/D):**
+- Δ_LB(A=enso_b25) ≤ −0.004 → ENSO confirmado → final1 = C se C≥A senão A
+- |Δ(A)| < 0.003 → inconclusivo; downside gated (offset≡0 em neutro) → ship via OOF-análogo
+- Δ(A) ≥ +0.008 → mata alavanca (falhou no regime favorável) → final1 = blend65 puro
+- final2 = `v05_ridge_all` (1.69966, já selecionável, estruturalmente diverso) ou splice `[2023:* | 2024: ridge+offset]` se A confirmar
+- Proibido re-tunar β/thr/γ no LB (hill-climb no regime errado)
+- γ decide-se por gap2-OOF + C−A, nunca pelo público isolado
+- Finais divergem SÓ na metade 2024 (score final = privado; linhas 2023 irrelevantes ao prêmio)
