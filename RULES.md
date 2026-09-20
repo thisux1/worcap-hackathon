@@ -83,3 +83,20 @@ Fonte: aba "Rules" da competição (acesso restrito a inscritos) + mensagens do 
 - **Entregáveis (9h38):** acesso ao código ao término; plataforma livre; **não haverá pitch**.
 - **Prazo:** competição aberta até 23/09.
 - **Certificado de participação** para todos os participantes.
+
+## Esclarecimento adicional (19/09, canal #duvidas)
+
+Alexandre C. A. levantou que os dados de avaliação (2023-24) são públicos via ERA5/Copernicus —
+hiperparâmetros podem ser ajustados sobre o próprio teste. Resposta oficial (geronimo.lemos):
+
+> "Sim, os dados são públicos... A forma como encontramos para tentar mitigar esse problema é
+> revisar as submissões e criar um conjunto público e privado (embora ambos sejam públicos).
+> [...] deixamos as regras bem claras [...] e esperamos que todos as sigam. Obviamente, faremos
+> o que está ao nosso alcance para tentar garantir isso. Último comentário sobre overfit:
+> a preocupação é genuína e isso é um problema em várias competições públicas do Kaggle."
+
+**Consequência:** a organização reconhece oficialmente que a separação público/privado é nominal
+(os dois anos existem no ERA5) — a única defesa real é a revisão de código/causalidade. Isso
+eleva o valor de: (a) documentação de causalidade (test_invariance, DATA_MANIFESTO), (b) método
+OOF-first com submits só de confirmação — auditável e defensável, (c) NÃO usar ERA5 2023-24 de
+tp em qualquer etapa (inclusive seleção de submits = peeking no privado).

@@ -391,7 +391,8 @@ def eval_year_rec(store, alvo, model, test_year):
 
 def submit(store, alvo, Xraw, tgt_month, df, lam1, lam2, tag,
            all_years=True, seed=0, use_nmme=False,
-           winsorize_sigma=None, x2_std=None, pool_alpha=None):
+           winsorize_sigma=None, x2_std=None, pool_alpha=None,
+           enso_beta=None, enso_thr=0.8):
     """Fit em todos os anos (ou final_fit_years) + CSV dos 24 alvos."""
     from .folds import final_fit_years
     from .config import TRAIN_START, TRAIN_END, SUB_DIR
@@ -402,6 +403,13 @@ def submit(store, alvo, Xraw, tgt_month, df, lam1, lam2, tag,
                             lam1, lam2, seed=seed, use_nmme=use_nmme,
                             winsorize_sigma=winsorize_sigma, x2_std=x2_std,
                             pool_alpha=pool_alpha)
+    phase_map, n34 = None, None
+    if enso_beta:
+        from .enso import phase_composites, phase_of, enso_offset
+        if "nino34" in df.columns:
+            n34 = df["nino34"]
+            phase_map = phase_composites(alvo, years, n34,
+                                         enso_thr, -enso_thr)
     test = xr.open_dataset(DATA / TEST_FILE)
     T = pd.DatetimeIndex(test.time.values)
     orig = pd.DatetimeIndex(test.time_origem.values)
@@ -420,8 +428,13 @@ def submit(store, alvo, Xraw, tgt_month, df, lam1, lam2, tag,
         z1 = Xte_n[j] @ model["W"]
         X2 = x2_test(store, test, j, orig[j].month, lag, model.get("nmme"),
                      x2_stats=_x2_stats(model))
+        off = 0.0
+        if phase_map is not None:
+            ph = phase_of(n34.get(pd.Timestamp(orig[j]), np.nan))
+            off = enso_offset(phase_map, c, enso_beta,
+                              ph)[t.month - 1].ravel()
         yh = (c[t.month - 1].ravel() + s[t.month - 1].ravel() * z1
-              + np.einsum("pk,pk->p", X2, model["W2"]))
+              + np.einsum("pk,pk->p", X2, model["W2"]) + off)
         ys.append(np.clip(yh.reshape(shape), 0, None))
     da = xr.DataArray(np.stack(ys), dims=("time", "lat", "lon"),
                       coords={"time": T, "lat": alvo.lat, "lon": alvo.lon})
