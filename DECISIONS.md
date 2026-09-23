@@ -351,3 +351,27 @@ Por ano: 1983 −0.018, 1997 −0.016, 1998 −0.017; 1988/2005/2010 ~0; 2015 pr
 **Fila amanhã (5 slots):** γ-quente full-file em A (mede jul-dez/23), ridge_all+offset full-file (valida S1-2024), S2 ordem-corrigida, splice β0.35-2024, reserva.
 
 *Nova melhor LB: 1.68586 (~6º nominal). final1 provável = A; final2 entre S1/S2.*
+
+## Sessão 12 — dia 22: decisão final das 2 submissions
+
+**Evidência nova que virou a física:**
+- 2016 NÃO tinha Atlântico quente (TNA +0.2 banal) — FINAL_OPTIONS estava errado.
+- **2010 refuta "Atlântico amplifica":** o outro decay com TNA recorde (+1.25) teve ganho de offset ≈ 0 (+0.003). Correlação no painel é negativa: ganhos grandes só com Atlântico frio (1983: −0.037).
+- Literatura 2025: o El Niño 2023-24 teve teleconexão Pacífica SUPRIMIDA (~1/3 dos super-eventos) pelo Atlântico/Índico recordes → assinatura de 2024 é muda tipo-2016, não amplificada tipo-1983.
+- Re-slice por regime: Atlântico-quente decays (2010, 2016) → offset não ajudou (+0.003, +0.019).
+- Estrutura quadrática: Δ(β)=Vβ²−2αVβ; 2016 fitta β*≈−0.18 (anti-canônico); banda de overshoot do bump = α∈(0.12,0.17), custo ≤0.006.
+
+**Vereditos dos avaliadores (final1 × hedge):**
+| agente | dose | hedge | nota |
+|---|---|---|---|
+| EV-max | A33 | P | opção de upside sob piso; v2 decorrelaciona mesmo quando falha |
+| minimax-regret | A33 | P | max-regret 6 vs 8/8/10; R falha em {offset-fail ∩ v2-help} |
+| advogado | A25 | R | objeção de processo (LB-slope) + v2 falha em regime extremo |
+
+**DECISÃO: final1 = `splice_A_b33_24` (1.68586); final2 = `blend_ridge_v2_65` (1.69816) — par {A33, P}.**
+- Motivação da dose documentada como análogo-OOF (tabela β*≈0.30-0.60 em anos decay, sessão 11) — não como extrapolação do slope LB. Alegação "Atlântico amplifica" descartada (refutada por 2010).
+- Hedge P > R: cobre o mundo offset-falha provável mantendo v2; R só vence no canto falha-composta (exige P(v2-falha|off-falha)>0.62, contradito por gap2). Margem ~0.0004-0.005 — reconhecemos que é quase cara-ou-coroa.
+- AVISO: auto-seleção do Kaggle pegaria {A, S1} (ambos com offset) — SELEÇÃO MANUAL OBRIGATÓRIA.
+- splice_A_b33_24 auditado: 2023==A, jun-dez/24==A, jan-mai/24−A = 0.08·Δclim (−0.0091 médio). Submetido, público 1.68586 (confirmado).
+
+**Pendentes documentais:** kernel enso2 (compósito 2-way) rodando — ideador provou no-op em 2024 (células tna vazias→fallback; ep_cp→célula-2016 muda = hedge disfarçado); resultado vira registro. Dataset v13 dropou parquets por .gitignore no worktree novo — v14 restaurou.
