@@ -29,7 +29,7 @@ from worcap.enso import phase_of, phase_composites, enso_offset
 LOOKUP = {f["test_year"]: f["train_years"] for f in loyo_folds()}
 
 LAM1, LAM2 = 1000.0, 300.0
-YEARS = [1983, 1988, 1997, 1998, 2005, 2010, 2015]
+YEARS = [1983, 1988, 1992, 1997, 1998, 2005, 2010, 2015, 2016]
 TRANS = [1997, 1998]                    # anos de transicao ENSO forte
 NEUT = [y for y in YEARS if y not in TRANS]
 BETAS = [0.0, 0.25, 0.5, 0.75, 1.0]
