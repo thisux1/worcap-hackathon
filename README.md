@@ -9,9 +9,16 @@ sobre grade 301×261 (lat −60..15, lon −90..−25).
 | modelo | OOF (LOYO+embargo) | LB público (2023) |
 |---|---|---|
 | V0 climatologia mensal/pixel | 1.8081 | 1.85077 |
-| **V0.5 ridge por pixel** | **1.7391** | **1.69966** (fit 1940–2022) |
+| V0.5 ridge por pixel | 1.7391 | 1.69966 (fit 1940–2022) |
 | V1 LightGBM | ~1.85 subset | 1.84438 |
 | V2 pixel-ridge (mini-Rodeo) | ~1.76 subset | 1.70886 |
+| blend 65% V0.5 + 35% V2 | ~1.75 | 1.69816 |
+| **blend + offset ENSO-condicional (β=0.25, thr=0.8)** | — | **1.68586** |
+
+**Seleção final (privado = 2024):** final1 `splice_A_b33_24` (lado-2024 com
+β=0.33, dose dos análogos-decay OOF) · final2 `blend_ridge_v2_65` (hedge sem
+offset — cobre o modo de falha documentado em 2016). Racional completo:
+`FINAL_OPTIONS.md` (vereditos de 6 avaliadores) e `DECISIONS.md` sessão 12.
 
 Detalhes, fontes e decisões: `DECISIONS.md` (log de experimentos) e `ADR.md`
 (arquitetura). Submissões em `submissions/`, validadas por `worcap/submission.py`.
