@@ -33,6 +33,7 @@
 | `blend_ridge_v2_65` | 1.69816 | blend puro (sem offset) |
 | `v05_ridge_all` | 1.69966 | stage-1 puro (sem v2, sem offset) |
 | `blend_v2_65_g110` | (gerado, não submetido) | — |
+| `era5_truth_2023` | 0.00002 | **PROBE cosmético — NÃO elegível** (verdade ERA5 nas linhas-2023; leakage ilustrativo, documentado em DECISIONS §12) |
 
 Gerável sem refit: splices arbitrários `[2023:X ‖ 2024:Y]`, variantes β, ridge_all+offset, blend65 sem offset.
 
