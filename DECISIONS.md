@@ -375,3 +375,5 @@ Por ano: 1983 −0.018, 1997 −0.016, 1998 −0.017; 1988/2005/2010 ~0; 2015 pr
 - splice_A_b33_24 auditado: 2023==A, jun-dez/24==A, jan-mai/24−A = 0.08·Δclim (−0.0091 médio). Submetido, público 1.68586 (confirmado).
 
 **Pendentes documentais:** kernel enso2 (compósito 2-way) rodando — ideador provou no-op em 2024 (células tna vazias→fallback; ep_cp→célula-2016 muda = hedge disfarçado); resultado vira registro. Dataset v13 dropou parquets por .gitignore no worktree novo — v14 restaurou.
+
+**Kernel enso2 (compósito 2-way, resultado final — negativo):** 8 variantes (tna/atl3/nino12/ep_cp × sign/tercile, shrinkage k=5, thr=0.8) avaliadas nos 9 anos. NENHUMA conserta 2016 (+0.018~+0.022 em β0.25, vs +0.0186 do 1-way). Melhor agregado marginal: ep_cp:tercile −0.0073 vs −0.0066 (barulho). Falha de 2016 é intrínseca ao compósito (β*≈−0.18, anti-canônico) — não resgatável por condicionamento nos índices disponíveis. Confirma: (1) offset 1-way = melhor extrato; (2) hedge sem-offset é a única proteção real; (3) 2-way seria no-op em 2024 de qualquer forma (células vazias→fallback). Branch exp/enso-2way (6d49186) fica como registro; não adotado.
