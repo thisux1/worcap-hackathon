@@ -1,4 +1,4 @@
-# Reprodução das submissões finais — equipe (Kaggle): **thisux1**
+# Reprodução das submissões finais — equipe (Kaggle): **thiago**
 
 Pipeline causal: todas as features usam apenas dados ≤ fim do mês de origem (T−1).
 Validação: LOYO com embargo ±1 ano; compósitos ENSO e climatologia refitados por fold.
