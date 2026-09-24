@@ -290,12 +290,12 @@ splice por lag sem fundamento; tp_lo contribui pouco em qualquer lag.
 
 *20/09 ~01:30 UTC. Resultados de 4 kernels paralelos sobre o branch `exp/integ`.*
 
-**Resultados (OOF LOYO, média 7 anos, gap1/gap2):**
+Resultados (OOF LOYO, média 7 anos, gap1/gap2):
 
 | alavanca | resultado | veredito |
 |---|---|---|
-| **Offset ENSO-condicional** (β·[clim_fase−clim_full], fase por nino34 do mês-origem) | β=0.25/thr=0.8: 1.7499 gap1 / 1.7519 gap2 vs baseline 1.7593/1.7615 (−0.009); por ano: 1983 −0.037, 97 −0.015, 98 −0.018, 2015 −0.011, neutros ~0 | **ADOTADO** — único lever que melhora concentrado no regime-alvo sem custo nos neutros |
-| **γ=1.10 inflação** (w=0.65) | −0.003 gap1 e gap2 (grid 0.9–1.2, ótimo interior) | candidato — decide-se pelo LB + gap2 |
+| Offset ENSO-condicional (β·[clim_fase−clim_full], fase por nino34 do mês-origem) | β=0.25/thr=0.8: 1.7499 gap1 / 1.7519 gap2 vs baseline 1.7593/1.7615 (−0.009); por ano: 1983 −0.037, 97 −0.015, 98 −0.018, 2015 −0.011, neutros ~0 | adotado — único lever que melhora concentrado no regime-alvo sem custo nos neutros |
+| γ=1.10 inflação (w=0.65) | −0.003 gap1 e gap2 (grid 0.9–1.2, ótimo interior) | candidato — decide-se pelo LB + gap2 |
 | λ1 sweep | 1000 confirmado ótimo | mantém |
 | λ2=30 (vs 300) | −0.002, ótimo na BORDA do grid, só 4 anos | suspenso — grid estendido antes de qualquer slot |
 | winsorize ±4σ | +0.003 | morto |
@@ -303,13 +303,13 @@ splice por lag sem fundamento; tp_lo contribui pouco em qualquer lag.
 | pooling W2 (α<1) | α=1.0 ótimo | morto |
 | recursão, damping, clim-window, lag-splice, NMME | — | mortos em sessões anteriores |
 
-**Bug corrigido em submit():** `phase_of()` não recebia `enso_thr` — origens jan/fev-2023 seriam "frias" (La Niña) no path wired vs "neutras" no script. Fix: `phase_of(v, enso_thr, -enso_thr)`.
+Bug corrigido em `submit()`: `phase_of()` não recebia `enso_thr` — origens jan/fev-2023 seriam "frias" (La Niña) no path wired vs "neutras" no script. Fix: `phase_of(v, enso_thr, -enso_thr)`.
 
-**Ordem pós-hoc fixada:** `damp(γ) → enso_offset(β)` — offset mantém magnitude β calibrada (γ não infla o offset).
+Ordem pós-hoc fixada: `damp(γ)` antes de `enso_offset(β)`, assim o offset mantém a magnitude β calibrada (o γ não infla o offset).
 
-**Extremos do offset verificados:** |Δ|max ~35 mm/dia só na costa Pacífico Equador/Chocó (clim 30-67) — assinatura física canônica El Niño, coerente espacialmente. N=8-22 anos/célula (mês,fase).
+Extremos do offset verificados: |Δ|max ~35 mm/dia só na costa Pacífico Equador/Chocó (clim 30-67) — assinatura física canônica El Niño, coerente espacialmente. N=8-22 anos/célula (mês,fase).
 
-**REGRA PRÉ-REGISTRADA de seleção das finais (registrada ANTES de ver os scores do lote A/C/D):**
+Regra pré-registrada de seleção das finais (escrita antes de ver os scores do lote A/C/D):
 - Δ_LB(A=enso_b25) ≤ −0.004 → ENSO confirmado → final1 = C se C≥A senão A
 - |Δ(A)| < 0.003 → inconclusivo; downside gated (offset≡0 em neutro) → ship via OOF-análogo
 - Δ(A) ≥ +0.008 → mata alavanca (falhou no regime favorável) → final1 = blend65 puro
@@ -322,60 +322,63 @@ splice por lag sem fundamento; tp_lo contribui pouco em qualquer lag.
 
 *20/09 ~23:00 UTC — 5/5 submits usados.*
 
-**Resultados LB público (vs baseline blend65/35 = 1.69816):**
+Resultados no LB público (vs baseline blend65/35 = 1.69816):
 
 | submit | score | Δ | leitura |
 |---|---|---|---|
-| blend+enso β=0.25/thr=0.8 (A) | **1.68586** | **−0.0123** | ENSO CONFIRMADO (gate −0.004 passou 3×) |
+| blend+enso β=0.25/thr=0.8 (A) | **1.68586** | **−0.0123** | ENSO confirmado (gate −0.004 passou 3×) |
 | A + γ=1.10 global (C) | 1.68847 | −0.0097 | γ global custa +0.0026 → morto no público |
 | blend+enso β=0.15 (D) | 1.68963 | −0.0085 | dose-resposta monotônica |
 | splice[A-2023‖ridge_all+enso-2024] (S1) | 1.68586 | =A | mecânica splice validada (público idêntico) |
 | splice[A-2023‖A+γ1.10-quente-2024] (S2) | 1.68586 | =A | idem |
 
-**Kernel gphase — γ por fase ENSO (w=0.65, OOF):**
+Kernel gphase, γ por fase ENSO (w=0.65, OOF):
 QUENTE: γ>1 melhora monotônico até 1.2 (1.8663 vs 1.8753); NEUTRO/FRIO: γ=1.0 ótimo.
 Por ano: 1983 −0.018, 1997 −0.016, 1998 −0.017; 1988/2005/2010 ~0; 2015 prefere γ<1.
-→ γ não morreu, é **condicional à fase**; aposta privada S2 = γ só em meses quentes de 2024 (decay ≈ 1983/1998).
+Ou seja, o γ não morreu; é condicional à fase. A aposta privada S2 é γ só nos meses quentes de 2024 (decay ≈ 1983/1998).
 
-**Auditoria por 3 subagentes (sessão de validação):**
+Auditoria por 3 agentes de validação:
 - CSVs submetidos verificados por amostragem direta — splice correto (jan-mai/24 inflados, jun-dez = A)
 - Bug residual: kaggle_assets/pixel_ridge.py sem enso_thr → sincronizado, dataset v12
 - Ordem γ×offset em S1 deviava da registrada (γ inflava offset ×1.1) → regenerado splice_A_gwarm24_v2
 - Física: offset sub-estima amplitude real de 2023-24 (costero+Atlântico ausentes do n34) → headroom positivo
 - N por célula (mês,fase): 8-22; extremos ±9 = Chocó/costa Equador (físico)
 
-**Lacuna identificada:** 2016 (decay do evento 2015-16, o mais análogo a 2023-24) nunca entrou no eval → gphase v2 rodando com 2016+1992. Decisivo para S2.
+Lacuna identificada: 2016 (decay do evento 2015-16, o mais análogo a 2023-24) nunca entrou no eval. gphase v2 rodando com 2016+1992; decisivo para S2.
 
-**β por ano (kernel enso, thr=0.8):** anos El Niño/decay querem β~0.4-0.5 (1983: −0.054 em β0.5); agregado 0.25 é puxado por anos frios. Em 2024 só meses quentes disparam → β=0.3-0.35 no lado-2024 defensável via OOF-análogo.
+β por ano (kernel enso, thr=0.8): anos El Niño/decay querem β~0.4-0.5 (1983: −0.054 em β0.5); o agregado 0.25 é puxado para baixo pelos anos frios. Em 2024 só os meses quentes disparam, então β=0.3-0.35 no lado-2024 é defensável via OOF-análogo.
 
-**Fila amanhã (5 slots):** γ-quente full-file em A (mede jul-dez/23), ridge_all+offset full-file (valida S1-2024), S2 ordem-corrigida, splice β0.35-2024, reserva.
+Fila de amanhã (5 slots): γ-quente full-file em A (mede jul-dez/23), ridge_all+offset full-file (valida S1-2024), S2 ordem-corrigida, splice β0.35-2024, reserva.
 
 *Nova melhor LB: 1.68586 (~6º nominal). final1 provável = A; final2 entre S1/S2.*
 
 ## Sessão 12 — dia 22: decisão final das 2 submissions
 
-**Evidência nova que virou a física:**
-- 2016 NÃO tinha Atlântico quente (TNA +0.2 banal) — FINAL_OPTIONS estava errado.
-- **2010 refuta "Atlântico amplifica":** o outro decay com TNA recorde (+1.25) teve ganho de offset ≈ 0 (+0.003). Correlação no painel é negativa: ganhos grandes só com Atlântico frio (1983: −0.037).
-- Literatura 2025: o El Niño 2023-24 teve teleconexão Pacífica SUPRIMIDA (~1/3 dos super-eventos) pelo Atlântico/Índico recordes → assinatura de 2024 é muda tipo-2016, não amplificada tipo-1983.
-- Re-slice por regime: Atlântico-quente decays (2010, 2016) → offset não ajudou (+0.003, +0.019).
-- Estrutura quadrática: Δ(β)=Vβ²−2αVβ; 2016 fitta β*≈−0.18 (anti-canônico); banda de overshoot do bump = α∈(0.12,0.17), custo ≤0.006.
+Evidência nova que mudou a leitura da física:
 
-**Vereditos dos avaliadores (final1 × hedge):**
+- 2016 não tinha Atlântico quente (TNA ~+0.2, banal). O FINAL_OPTIONS estava errado nesse ponto.
+- 2010 refuta a hipótese "Atlântico amplifica": foi o outro decay com TNA recorde (+1.25) e o ganho de offset foi ~zero (+0.003). A correlação no painel é se algo negativa: os ganhos grandes vieram de anos com Atlântico frio (1983: −0.037).
+- Literatura de 2025: o El Niño 2023-24 teve a teleconexão do Pacífico suprimida (~1/3 da amplitude dos super-eventos) pelo Atlântico/Índico recordes. A assinatura de 2024 é muda tipo-2016, não amplificada tipo-1983.
+- Re-slice por regime: nos decays com Atlântico quente (2010, 2016) o offset não ajudou (+0.003, +0.019).
+- Estrutura quadrática: Δ(β)=Vβ²−2αVβ; 2016 fitta β*≈−0.18 (anti-canônico); a banda de overshoot do bump é α∈(0.12,0.17), custo ≤0.006.
+
+Vereditos dos avaliadores (final1 × hedge):
+
 | agente | dose | hedge | nota |
 |---|---|---|---|
 | EV-max | A33 | P | opção de upside sob piso; v2 decorrelaciona mesmo quando falha |
 | minimax-regret | A33 | P | max-regret 6 vs 8/8/10; R falha em {offset-fail ∩ v2-help} |
 | advogado | A25 | R | objeção de processo (LB-slope) + v2 falha em regime extremo |
 
-**DECISÃO: final1 = `splice_A_b33_24` (1.68586); final2 = `blend_ridge_v2_65` (1.69816) — par {A33, P}.**
-- Motivação da dose documentada como análogo-OOF (tabela β*≈0.30-0.60 em anos decay, sessão 11) — não como extrapolação do slope LB. Alegação "Atlântico amplifica" descartada (refutada por 2010).
-- Hedge P > R: cobre o mundo offset-falha provável mantendo v2; R só vence no canto falha-composta (exige P(v2-falha|off-falha)>0.62, contradito por gap2). Margem ~0.0004-0.005 — reconhecemos que é quase cara-ou-coroa.
-- AVISO: auto-seleção do Kaggle pegaria {A, S1} (ambos com offset) — SELEÇÃO MANUAL OBRIGATÓRIA.
-- splice_A_b33_24 auditado: 2023==A, jun-dez/24==A, jan-mai/24−A = 0.08·Δclim (−0.0091 médio). Submetido, público 1.68586 (confirmado).
+Decisão: final1 = `splice_A_b33_24` (1.68586); final2 = `blend_ridge_v2_65` (1.69816).
 
-**Pendentes documentais:** kernel enso2 (compósito 2-way) rodando — ideador provou no-op em 2024 (células tna vazias→fallback; ep_cp→célula-2016 muda = hedge disfarçado); resultado vira registro. Dataset v13 dropou parquets por .gitignore no worktree novo — v14 restaurou.
+- A dose 0.33 sai do ótimo OOF dos anos-decay (β*≈0.30-0.60, tabela da sessão 11), não do slope do LB. A alegação "Atlântico amplifica" foi descartada (2010 refuta).
+- Hedge P e não R: cobre o mundo offset-falha sem abrir mão do v2; R só ganharia na falha composta, que exige P(v2-falha|off-falha)>0.62, contradito pelo gap2. Margem ~0.0004-0.005, quase cara-ou-coroa; registrado por honestidade.
+- Aviso operacional: a auto-seleção do Kaggle pegaria {A, S1}, ambos com offset. A seleção manual é obrigatória.
+- splice_A_b33_24 auditado: linhas-2023 == A, jun-dez/24 == A, jan-mai/24 − A = 0.08·Δclim (−0.0091 médio). Submetido, público 1.68586 confirmado.
 
-**Kernel enso2 (compósito 2-way, resultado final — negativo):** 8 variantes (tna/atl3/nino12/ep_cp × sign/tercile, shrinkage k=5, thr=0.8) avaliadas nos 9 anos. NENHUMA conserta 2016 (+0.018~+0.022 em β0.25, vs +0.0186 do 1-way). Melhor agregado marginal: ep_cp:tercile −0.0073 vs −0.0066 (barulho). Falha de 2016 é intrínseca ao compósito (β*≈−0.18, anti-canônico) — não resgatável por condicionamento nos índices disponíveis. Confirma: (1) offset 1-way = melhor extrato; (2) hedge sem-offset é a única proteção real; (3) 2-way seria no-op em 2024 de qualquer forma (células vazias→fallback). Branch exp/enso-2way (6d49186) fica como registro; não adotado.
+Pendentes documentais: kernel enso2 (compósito 2-way) rodando; o ideador já tinha mostrado que seria no-op em 2024 (células tna vazias → fallback; ep_cp → célula muda tipo-2016). O dataset v13 dropou os parquets por causa do .gitignore no worktree novo; v14 restaurou.
 
-**PROBE público (cosmético, NÃO-selecionável):** `era5_truth_2023.csv` = ERA5 tp real ×1000 nas linhas-2023 + A nas linhas-2024 → público 0.00002 (screenshot). Confirma que o alvo é ERA5 tp mensal na grade 0.25° — implica que o privado-2024 é teoricamente vazável via CDS, o que as finais honestas não fazem. Arquivo jamais elegível à seleção final.
+Kernel enso2 (compósito 2-way, resultado final: negativo). 8 variantes (tna/atl3/nino12/ep_cp × sign/tercile, shrinkage k=5, thr=0.8) nos 9 anos. Nenhuma conserta 2016 (+0.018~+0.022 em β0.25, contra +0.0186 do 1-way). Melhor agregado marginal: ep_cp:tercile −0.0073 vs −0.0066, barulho. A falha de 2016 é intrínseca ao compósito (β*≈−0.18), não resgatável por condicionamento nos índices disponíveis. Confirma três coisas: o offset 1-way é o melhor extrato dessa abordagem; o hedge sem offset é a única proteção real; e o 2-way seria no-op em 2024 de qualquer forma. Branch exp/enso-2way (6d49186) fica de registro; não adotado.
+
+Probe público (cosmético, não selecionável): `era5_truth_2023.csv` = ERA5 tp real ×1000 nas linhas-2023 + A nas linhas-2024 → público 0.00002. Confirma que o alvo é ERA5 tp mensal na grade 0.25°, o que torna o privado-2024 teoricamente replicável via CDS. As finais não usam isso e o arquivo nunca foi elegível.

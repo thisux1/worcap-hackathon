@@ -132,20 +132,19 @@ NNLS ou ridge encolhido para pesos iguais sobre anomalias padronizadas OOF. Benc
 
 ### Arquitetura final realizada (pós-competição, registrada para auditoria)
 
-O que efetivamente foi produzido diverge do plano em alguns pontos — registro honesto:
+O que efetivamente foi produzido diverge do plano em alguns pontos:
 
-- **Vencedora: blend linear 65% V0.5 + 35% V2** (pixel-ridge local) em espaço de
-  precipitação (`scripts/blend.py`), não um stacker NNLS. GBM (V1) e NMME (V3)
-  morreram no OOF/LB — documentado em DECISIONS.
-- **Pós-processamento aditivo ENSO-condicional** (`worcap/enso.py`,
+- Blend linear 65% V0.5 + 35% V2 (pixel-ridge local) em espaço de
+  precipitação (`scripts/blend.py`), não um stacker NNLS. GBM (V1) e a via
+  dinâmica NMME (V3) não passaram no OOF/LB; histórico em DECISIONS.
+- Pós-processamento aditivo ENSO-condicional (`worcap/enso.py`,
   `scripts/enso_offset.py`): `ŷ += β·(clim_fase − clim_full)` nos meses-alvo
-  cuja fase ENSO da **origem T−1** (n34 ≥ +0.8 quente / ≤ −0.8 frio) é
+  cuja fase ENSO da origem T−1 (n34 ≥ +0.8 quente / ≤ −0.8 frio) é
   não-neutra. Compósitos por (mês-alvo × fase) fitados só em anos de treino
-  do fold. β=0.25 público; β=0.33 no lado-2024 do final1.
-- **Splice por ano** (`scripts/splice_year.py`): composição `[2023:X ‖ 2024:Y]`
-  permite divergir as finais apenas na metade privada — hedge a custo público
-  zero, dado que o público só lê 2023.
-- **Seleção final = {A33, blend65}**: ver FINAL_OPTIONS.md e DECISIONS §12.
+  do fold. β=0.25 no público; β=0.33 no lado-2024 do final1.
+- Splice por ano (`scripts/splice_year.py`): a composição `[2023:X ‖ 2024:Y]`
+  deixa as finais divergirem só na metade privada, já que o público só lê 2023.
+- Seleção final = {A33, blend65}: ver FINAL_OPTIONS.md e DECISIONS sessão 12.
 
 ---
 
