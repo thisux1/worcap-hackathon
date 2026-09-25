@@ -142,4 +142,4 @@ data_ext/        dados externos (ERSSTv5, ERA5-MSLP, NMME) — ver manifesto</co
 
 `ADR.md` · arquitetura — `DECISIONS.md` · log de experimentos —
 `FINAL_OPTIONS.md` · decisão das finais — `DATA_MANIFESTO.md` · dados externos —
-`RULES.md` · regras — `REPRODUCE.md` · reprodução
+`RULES.md` · regras — `REPRODUCE.md` · reprodução — `POSTMORTEM.md` · lições
