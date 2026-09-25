@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 310" width="880" height="310">
+  <defs>
+    <filter id="glow" x="-10%" y="-40%" width="120%" height="180%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+    </filter>
+    <pattern id="rgrid" width="34" height="34" patternUnits="userSpaceOnUse">
+      <path d="M 34 0 L 0 0 0 34" fill="none" stroke="#ff2a5f" stroke-opacity="0.05" />
+    </pattern>
+  </defs>
+
+  <rect width="880" height="310" fill="#090d13" />
+  <rect x="10" y="10" width="860" height="290" rx="10" fill="url(#rgrid)" />
+  <rect x="10" y="10" width="860" height="290" rx="10" fill="none" stroke="#ff2a5f" stroke-opacity="0.5" stroke-width="1.5" />
+
+  <style>
+    .name { font-family: 'Fira Code','JetBrains Mono',monospace; font-size: 12px; fill: #e2e8f0; }
+    .val  { font-family: 'Fira Code','JetBrains Mono',monospace; font-size: 12px; fill: #6272a4; }
+    .tick { font-family: 'Fira Code','JetBrains Mono',monospace; font-size: 10px; fill: #6272a4; }
+    .hd   { font-family: 'Fira Code','JetBrains Mono',monospace; font-size: 13px; font-weight: bold; fill: #ff2a5f; }
+  </style>
+
+  <text x="30" y="36" class="hd">$ cat results.log</text>
+  <text x="850" y="36" text-anchor="end" class="tick">LB público 2023 · RMSE mm/dia · escala 1.55–1.95</text>
+
+  <!-- grid vertical -->
+  <g stroke="#6272a4" stroke-opacity="0.25" stroke-dasharray="3 6">
+    <line x1="306" y1="50" x2="306" y2="272"/>
+    <line x1="459" y1="50" x2="459" y2="272"/>
+    <line x1="611" y1="50" x2="611" y2="272"/>
+    <line x1="764" y1="50" x2="764" y2="272"/>
+  </g>
+  <text x="306" y="286" text-anchor="middle" class="tick">1.60</text>
+  <text x="459" y="286" text-anchor="middle" class="tick">1.70</text>
+  <text x="611" y="286" text-anchor="middle" class="tick">1.80</text>
+  <text x="764" y="286" text-anchor="middle" class="tick">1.90</text>
+
+  <!-- barras (x0=230, escala (v-1.55)/0.4*610) -->
+  <g>
+    <text x="222" y="72" text-anchor="end" class="name">climatologia</text>
+    <rect x="230" y="58" height="20" width="459" rx="3" fill="#6272a4" opacity="0.75">
+      <animate attributeName="width" from="0" to="459" dur="0.9s" begin="0.1s" fill="freeze"/>
+    </rect>
+    <text x="695" y="72" class="val">1.85077<animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.0s" fill="freeze"/></text>
+
+    <text x="222" y="110" text-anchor="end" class="name">v1 lightgbm</text>
+    <rect x="230" y="96" height="20" width="449" rx="3" fill="#6272a4" opacity="0.75">
+      <animate attributeName="width" from="0" to="449" dur="0.9s" begin="0.25s" fill="freeze"/>
+    </rect>
+    <text x="685" y="110" class="val">1.84438<animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.15s" fill="freeze"/></text>
+
+    <text x="222" y="148" text-anchor="end" class="name">v2 pixel-ridge</text>
+    <rect x="230" y="134" height="20" width="242" rx="3" fill="#ff79c6" opacity="0.55">
+      <animate attributeName="width" from="0" to="242" dur="0.9s" begin="0.4s" fill="freeze"/>
+    </rect>
+    <text x="478" y="148" class="val">1.70886<animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.3s" fill="freeze"/></text>
+
+    <text x="222" y="186" text-anchor="end" class="name">ridge λ=1000</text>
+    <rect x="230" y="172" height="20" width="228" rx="3" fill="#ff79c6" opacity="0.55">
+      <animate attributeName="width" from="0" to="228" dur="0.9s" begin="0.55s" fill="freeze"/>
+    </rect>
+    <text x="464" y="186" class="val">1.69966<animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.45s" fill="freeze"/></text>
+
+    <text x="222" y="224" text-anchor="end" class="name">blend 65/35</text>
+    <rect x="230" y="210" height="20" width="226" rx="3" fill="#f1fa8c" opacity="0.65">
+      <animate attributeName="width" from="0" to="226" dur="0.9s" begin="0.7s" fill="freeze"/>
+    </rect>
+    <text x="462" y="224" class="val" fill="#f1fa8c">1.69816<animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.6s" fill="freeze"/></text>
+
+    <text x="222" y="262" text-anchor="end" class="name" fill="#ff2a5f" font-weight="bold">+ enso β.25/β.33</text>
+    <rect x="230" y="248" height="20" width="207" rx="3" fill="#ff2a5f" filter="url(#glow)">
+      <animate attributeName="width" from="0" to="207" dur="0.9s" begin="0.85s" fill="freeze"/>
+    </rect>
+    <text x="443" y="262" class="val" fill="#ff2a5f">1.68586 · final1<animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.75s" fill="freeze"/></text>
+  </g>
+</svg>
