@@ -1,10 +1,63 @@
-# WorCAP 2026 — previsão de precipitação mensal (América do Sul)
+<div align="center">
+  <a href="#root"><img src="./assets/banner.svg?v=1" alt="WORCAP 2026" width="100%"/></a>
+</div>
 
-Solução para o desafio Kaggle `previsao-climatica-de-precipitacao-sobre-a-america-do-sul`
-(INPE/WorCAP 2026): prever a precipitação média mensal (mm/dia) do mês seguinte
-sobre grade 301×261 (lat −60..15, lon −90..−25).
+<table width="100%">
+  <tr>
+    <td width="50%" valign="top">
+      <pre lang="bash"><code>$ worcap / briefing
+------------------------------------------------
+• Desafio : precipitação média mensal (mm/dia)
+• Grade   : 301×261 — lat −60..15, lon −90..−25
+• Métrica : RMSE absoluto · público 2023 / privado 2024
+• Treino  : ERA5 1940–2022 · features atmosféricas T−1</code></pre>
+    </td>
+    <td width="50%" valign="top">
+      <pre lang="python"><code>class Solucao:
+    stack    = ["ridge λ=1000", "pixel-ridge λ2=300",
+                "blend 65/35", "enso_offset β"]
+    validacao = "LOYO + embargo ±1a"
+    finals    = ["splice_A_b33_24",
+                 "blend_ridge_v2_65"]
+    melhor_lb = 1.68586</code></pre>
+    </td>
+  </tr>
+</table>
 
-## Resultado
+### ❯ badges
+
+<p align="left">
+  <img src="https://img.shields.io/badge/Kaggle-0D1117?style=flat-square&logo=kaggle&logoColor=ff2a5f&labelColor=0D1117&color=ff2a5f" alt="Kaggle" />
+  <img src="https://img.shields.io/badge/Python-0D1117?style=flat-square&logo=python&logoColor=ff2a5f&labelColor=0D1117&color=ff2a5f" alt="Python" />
+  <img src="https://img.shields.io/badge/scikit--learn-0D1117?style=flat-square&logo=scikitlearn&logoColor=ff2a5f&labelColor=0D1117&color=ff2a5f" alt="scikit-learn" />
+  <img src="https://img.shields.io/badge/xarray-0D1117?style=flat-square&logoColor=ff2a5f&labelColor=0D1117&color=ff2a5f" alt="xarray" />
+  <img src="https://img.shields.io/badge/License-MIT-0D1117?style=flat-square&logoColor=39ff14&labelColor=0D1117&color=39ff14" alt="MIT" />
+  <img src="https://img.shields.io/badge/LB_público-1.68586-0D1117?style=flat-square&labelColor=0D1117&color=f1fa8c" alt="LB 1.68586" />
+  <img src="https://img.shields.io/badge/status-concluído-0D1117?style=flat-square&labelColor=0D1117&color=6272a4" alt="status" />
+</p>
+
+---
+
+### ❯ pipeline
+
+<div align="center">
+  <img src="./assets/pipeline.svg?v=1" alt="Arquitetura" width="100%"/>
+</div>
+
+Features mensais compartilhadas: índices oceânicos do ERSSTv5 (nino12/3/34/4, tna,
+tsa, atl3, tio, saod, amm, pmm_n, npac, ep_cp + lags e médias móveis), PDO como
+PC1 do Pacífico Norte, proxy de SAM do ERA5-MSLP, médias regionais leave-one-out
+das 9 variáveis oficiais e NMME/SEAS5 lead-1 debiased. O alvo é a anomalia
+padronizada por pixel. O `enso_offset` soma `β·(clim_fase − clim_full)` só nos
+meses-alvo cuja fase ENSO na origem T−1 sai da faixa neutra (n34 ≥ 0.8 / ≤ −0.8).
+
+---
+
+### ❯ resultados
+
+<div align="center">
+  <img src="./assets/results.svg?v=1" alt="Scores no leaderboard público" width="100%"/>
+</div>
 
 | modelo | OOF (LOYO+embargo) | LB público (2023) |
 |---|---|---|
@@ -15,46 +68,34 @@ sobre grade 301×261 (lat −60..15, lon −90..−25).
 | blend 65% V0.5 + 35% V2 | ~1.75 | 1.69816 |
 | blend + offset ENSO (β=0.25, thr=0.8) | — | 1.68586 |
 
-Finais escolhidas (privado = 2024): `splice_A_b33_24` (lado-2024 com β=0.33,
-dose sugerida pelos anos-decay do OOF) e `blend_ridge_v2_65` (blend sem offset,
-para cobrir o caso em que o offset não transfere, como aconteceu em 2016).
-O raciocínio completo está em `FINAL_OPTIONS.md` e em `DECISIONS.md` sessão 12.
+---
 
-Detalhes de dados e decisões: `DECISIONS.md` (log de experimentos), `ADR.md`
-(arquitetura) e `REPRODUCE.md` (como gerar os dois CSVs finais). Submissões em
-`submissions/`, validadas por `worcap/submission.py`.
+### ❯ seleção_final
 
-## Modelo principal (V0.5 + V2)
+O privado é 2024, um ano-decay de El Niño, e o Kaggle fica com a melhor das duas
+finais marcadas (min-of-2). A escolha foi um barbell: upside na dose ENSO, piso
+no blend sem offset.
 
-Ridge multi-output por pixel sobre features mensais compartilhadas:
+| slot | arquivo | papel |
+|---|---|---|
+| final1 | `splice_A_b33_24` | 2023 = A; 2024 com β=0.33 (ótimo OOF dos anos-decay) |
+| final2 | `blend_ridge_v2_65` | sem offset — cobre o modo de falha visto em 2016 |
 
-- Índices oceânicos (ERSSTv5): nino12/3/34/4, tna, tsa, atl3, tio, saod, amm,
-  pmm_n, npac, ep_cp, mais lags de 1–3 meses, médias móveis de 3m e interações
-  sazonais.
-- PDO calculado como PC1 (EOF1) da anomalia de SST no Pacífico Norte (ERSSTv5,
-  convenção Mantua/Deser, média global removida).
-- Proxy de SAM: MSLP zonal 40°S − 65°S padronizado (ERA5 monthly, CDS).
-- Médias regionais de anomalia leave-one-out das 9 variáveis atmosféricas
-  oficiais em 5 macro-regiões.
-- NMME/SEAS5: anomalias debiased de previsão dinâmica lead-1 (C3S
-  `seasonal-monthly-single-levels`, NCEP-CFSv2 + ECMWF-SEAS5), regionais e
-  por pixel (V2). A climatologia do modelo exclui os anos do fold.
-- Alvo: anomalia padronizada por pixel (climatologia + σ mensais).
+Raciocínio completo, divergências e vereditos: `FINAL_OPTIONS.md` e
+`DECISIONS.md` (sessões 10–12).
 
-O V2 é um segundo ridge por pixel no resíduo do V0.5, com features locais
-(lags, vizinhança). O blend final junta os dois em espaço de precipitação.
+---
 
-## Validação (sem vazamento temporal)
+### ❯ anti_leak
 
-- LOYO: cada fold exclui o ano de teste e os vizinhos ±1 (embargo), com holdout
-  interno 2018–2022.
-- Climatologia, padronização, compósitos ENSO e anomalias NMME computados
-  dentro de cada fold.
-- Features externas restritas a dados até o fim do mês M−1 (mesma regra do teste).
-- `worcap/folds.py`, `worcap/oof.py` (parquet por fold), `worcap/submission.py`
-  (schema: ids iguais ao sample, sem NaN, ≥0, mm/dia).
+- LOYO com embargo ±1 ano; holdout interno 2018–2022 só para seleção.
+- Climatologia, σ, compósitos ENSO e debias NMME recalculados dentro de cada fold.
+- Toda feature usa apenas dados até o fim do mês M−1 (mesma regra do teste).
+- `worcap/folds.py`, `worcap/oof.py`, `worcap/submission.py`; testes em `tests/`.
 
-## Dados externos utilizados
+---
+
+### ❯ dados_externos
 
 | fonte | uso | acesso |
 |---|---|---|
@@ -62,27 +103,43 @@ O V2 é um segundo ridge por pixel no resíduo do V0.5, com features locais
 | ERA5 monthly MSLP −35..−70 (`data_ext/era5_mslp_southocean.nc`) | proxy SAM | CDS API (conta gratuita) |
 | C3S `seasonal-monthly-single-levels` NCEP+ECMWF, lead-1 (`data_ext/nmme/`) | features dinâmicas | CDS API + licenças |
 
-Convenções e proveniência completa: `worcap/indices.py`, `worcap/nmme.py` e
-`DATA_MANIFESTO.md`.
+Proveniência, hashes e licenças: `DATA_MANIFESTO.md`.
 
-## Reprodução
+---
+
+### ❯ reprodução
 
 ```bash
 conda env create -f environment.yml && conda activate worcap
-# dados oficiais na raiz (13 .nc) + data_ext/ (ERSST, ERA5-SLP, NMME)
+export WORCAP_DATA=. WORCAP_EXT=data_ext WORCAP_SUB=submissions
 python -m worcap.indices                 # índices ERSST + SAM + PDO
 python -c "from worcap.features import build_shared_table; build_shared_table()"
-python scripts/v0_climatologia.py        # baseline V0
-python scripts/v05_ridge.py              # OOF do ridge (78 folds)
-python scripts/v05_ridge.py --submit --all   # gera submissions/v05_ridge_all.csv
+python scripts/v0_climatologia.py        # baseline
+python scripts/v05_ridge.py --submit --all
 ```
 
-A geração das duas finais passo a passo está em `REPRODUCE.md`. Execução pesada
-(GBM, pixel-ridge, evals) rodou em kernel Kaggle privado (`kaggle_kernel/`),
-usando o dataset privado `worcap-assets2`; ver `ADR.md`.
+O passo a passo das duas finais está em `REPRODUCE.md`. A execução pesada rodou
+em kernel Kaggle (`kaggle_kernel/`, dataset `worcap-assets2`) — ver `ADR.md`.
 
-## Variáveis de ambiente
+Variáveis: `WORCAP_DATA`, `WORCAP_EXT`, `WORCAP_SUB`, `WORCAP_OOF`,
+`WORCAP_CACHE`, `WORCAP_EAGER=1` (carrega em RAM, usar no Kaggle).
 
-`WORCAP_DATA` (dir dos .nc oficiais), `WORCAP_EXT` (data_ext),
-`WORCAP_SUB`, `WORCAP_OOF`, `WORCAP_CACHE` (gravável), `WORCAP_EAGER=1`
-(carrega variáveis em RAM — usar no Kaggle).
+---
+
+### ❯ estrutura
+
+<pre lang="text"><code>worcap/          núcleo — indices, features, folds, oof, pixel_ridge, enso, nmme, submission
+scripts/         CLI dos experimentos — v0_climatologia, v05_ridge, v2_pixel_ridge,
+                 blend, enso_offset, splice_year, gamma_warm, damp, report
+kaggle_*/        kernels e assets usados na execução remota
+tests/           causalidade e schema (test_invariance, test_enso, ...)
+submissions/     CSVs gerados (validados por worcap/submission.py)
+data_ext/        dados externos (ERSSTv5, ERA5-MSLP, NMME) — ver manifesto</code></pre>
+
+---
+
+### ❯ docs
+
+`ADR.md` · arquitetura — `DECISIONS.md` · log de experimentos —
+`FINAL_OPTIONS.md` · decisão das finais — `DATA_MANIFESTO.md` · dados externos —
+`RULES.md` · regras — `REPRODUCE.md` · reprodução
