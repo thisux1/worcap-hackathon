@@ -17,7 +17,7 @@ Regra de uso: **toda decisão, achado de pesquisa ou mudança de premissa entra 
 
 | ID | Data | Decisão | Status | Motivo |
 |---|---|---|---|---|
-| D-001 | 15/09 | Fatos oficiais incorporados à ADR v4: métrica RMSE absoluto (mm/dia), alvo = próprio ERA5, treino 1940–2022, LB público 2023 / privado 2024, CSV `ID={ano}_{mes}_{lat}_{lon}`, ≤3 submits/dia, GPU 30h/sem, auditoria de código | confirmado | Vídeos da organização (Jerônimo, Carlos) |
+| D-001 | 15/09 | Fatos oficiais incorporados à ADR v4: métrica RMSE absoluto (mm/dia), alvo = próprio ERA5, treino 1940–2022, LB público 2023 / privado 2024, CSV `ID={ano}_{mes}_{lat}_{lon}`, ≤3 submits/dia, GPU 30h/sem, auditoria de código | confirmado | vídeos oficiais da organização |
 | D-002 | 15/09 | Corte de V4-CNN e V5-ACE2 (não é adiamento) | decidido | 10 dias, 3 submits/dia, LB armadilhoso, auditoria — custo/benefício negativo |
 | D-003 | 15/09 | V3 dinâmico é **condicional**: kill-switch fim do dia 2 → fallback NMME/IRI OPeNDAP → drop | decidido | Filas MARS/CDS de horas–dias inviabilizam maratona curta |
 | D-004 | 15/09 | Pipeline enxuto: V0 + V0.5 + V1 + V2 (+V3 condicional) | decidido | Consistência > teto teórico sob prazo apertado |
@@ -62,13 +62,13 @@ Regra de uso: **toda decisão, achado de pesquisa ou mudança de premissa entra 
 
 | ID | Item | Por quê | Status |
 |---|---|---|---|
-| P-001 | **Tamanho do time: 3 ou 4?** Vídeo do Jerônimo diz ≤4; post oficial do LinkedIn (jul/2026) diz ≤3 | Muda divisão de trabalho | **resolvido 18/09**: Rules oficiais dizem ≤4 (prevalece sobre LinkedIn) |
+| P-001 | **Tamanho do time: 3 ou 4?** Material de divulgação diz ≤4; post oficial (jul/2026) diz ≤3 | Muda divisão de trabalho | **resolvido 18/09**: Rules oficiais dizem ≤4 (prevalece sobre o post) |
 | P-002 | URL + schema: `kaggle.com/competitions/previsao-climatica-de-precipitacao-sobre-a-america-do-sul` (restrita a inscritos — 404 anônimo). CSV = `id,tp_mm_day`; id = `{ano}_{mes}_{lat}_{lon}` com 2 casas decimais (ex. `2023_01_-60.00_-90.00`); **ordem vem do `sample_submission.csv` — não reconstruir**; 1.885.464 linhas = 24 meses × 78.561; 13 arquivos, 2,06 GB | — | resolvido |
 | P-003 | Unidades/grade: alvo e features já em **mm/dia**; lat crescente −60→15, lon −90→−25, 0,25°; domínio inclui oceano e Andes — RMSE sobre **todos** os 78.561 pontos; `treino_tp_alvo.nc` já vem com o shift M+1 aplicado (último mês NaN) | — | resolvido |
 | P-004 | Corte/emissão: features oficiais do teste são do mês M−1 (coord `time_origem`) → data de emissão efetiva = fim do mês M−1... atenção: features = mês *anterior ao alvo*, ex. alvo jan/2023 usa dez/2022 | — | resolvido |
 | P-005 | Formato exigido de citação de dados externos e escopo da auditoria de código. Rules coladas = só Foundational Rules genéricas; se houver seção de regras **específicas** da competição, checar lá | Manifesto de auditoria precisa casar com o exigido | resolvido |
 | P-006 | Licença FuXi-S2S vs. regras | §6c das Foundational Rules exige licença OSI sem limite de uso comercial; CC BY-NC-ND viola | resolvido → R-013 descartado |
-| P-007 | Perguntar no Discord: dados externos observados do **próprio mês-alvo** (ex.: SST de jan/2023 p/ prever jan/2023) são permitidos? Default = não usar (D-008) | Se liberado, skill de graça via oceano real | resolvido — regra de causalidade explícita transcrita em RULES.md (D-008 confirmado) |
+| P-007 | Perguntar no canal oficial: dados externos observados do **próprio mês-alvo** (ex.: SST de jan/2023 p/ prever jan/2023) são permitidos? Default = não usar (D-008) | Se liberado, skill de graça via oceano real | resolvido — regra de causalidade explícita transcrita em RULES.md (D-008 confirmado) |
 | P-008 | Campos "Maximum Team Size" e "Submissions per day" no site (sidebar/topo de Rules) + eventual seção de regras específicas. **Submits/dia = 5** (API respondeu "4 submissions remaining" após 1º envio) — vídeo dizia 3, prevalece a API | Fecha P-001 | resolvido — team ≤4 e 5 submits/dia ambos confirmados nas Rules |
 
 ---
@@ -111,7 +111,7 @@ Submissões geradas e validadas (schema, 1.885.464 linhas, ids idênticos ao sam
 
 ## Índice de fontes
 
-- Organização WorCAP 2026: vídeos de abertura (Jerônimo; Carlos), palestra Dra. Marília, post LinkedIn oficial (jul/2026), Discord do evento
+- Organização WorCAP 2026: vídeos de abertura, palestra técnica do evento, post oficial (jul/2026), canal oficial de dúvidas
 - Rodeo: Hwang et al. KDD'19 (arXiv 1809.07394) + repo `paulo-o/forecast_rodeo` + página L. Mackey (lmackey.github.io/forecastrodeo.html)
 - S2S AI Challenge: s2s-ai-challenge.github.io + `ecmwf-lab/climetlab-s2s-ai-challenge` + `HoratN/pp-s2s`
 - Pacotes: xeofs, xskillscore, climpred, lilio/s2spy (AI4S2S), C3S_evaluator, PyCPT (iri-pycpt.github.io), nmme-zarr
@@ -229,7 +229,7 @@ desempate premia submissão mais antiga; código do vencedor deve ser OSI sem li
 adicionado LICENSE MIT. Sem feature obrigatória: formato de saída + causalidade + auditabilidade
 são as exigências reais.
 
-**Canal #duvidas transcrito em RULES.md.** Confirmações oficiais: Copernicus/SEAS5 com cadastro
+**Esclarecimentos do canal oficial transcritos em RULES.md.** Confirmações oficiais: Copernicus/SEAS5 com cadastro
 gratuito = dado público OK; autorregressão legal; dados semanais/diários e fora do domínio legais;
 comissão avalia além da métrica; sem pitch; entrega = acesso ao código. **Alerta:** o leak do
 `teste_features` (campos atmosféricos do alvo aparecem na linha seguinte) foi reportado

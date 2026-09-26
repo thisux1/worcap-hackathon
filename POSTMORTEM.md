@@ -1,12 +1,11 @@
 # Post-mortem — WORCAP 2026
 
 Fechei em ~1.83875 no privado (par `splice_A_b33_24` + `blend_ridge_v2_65`),
-fora do top-10 (corte em 1.80337). O Bruno Simões ganhou com 1.57992. Depois do
-encerramento ele publicou o código (`github.com/Brun0Simoes/Athon`) e a
-organização esclareceu no #duvidas o que era permitido. Escrevi isso pra
-registrar o que eu faria diferente.
+fora do top-10 (corte em 1.80337). O vencedor fechou em 1.57992. Depois do
+encerramento ele publicou o código e a organização esclareceu no canal oficial
+o que era permitido. Escrevi isso pra registrar o que eu faria diferente.
 
-## O que o Bruno fez
+## O que o vencedor fez
 
 O modelo dele não é estatístico puro. É uma previsão dinâmica com correção
 estatística em cima:
@@ -33,7 +32,7 @@ do modelo em si.
 
 1. Cortei a via dinâmica (V3) no dia 2 por medo da fila do CDS/MARS. Depois
    acabei baixando NMME mesmo assim, mas usei só como feature marginal numa
-   tabela de 108 colunas. O Bruno fez disso o centro do modelo. A fila era
+   tabela de 108 colunas. Ele fez disso o centro do modelo. A fila era
    real, mas era custo fixo: era só disparar o download em background no dia 0
    enquanto eu construía o baseline.
 2. Li a regra de causalidade mais estrita do que ela era. Assumi "features ≤
