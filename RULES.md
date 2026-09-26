@@ -51,11 +51,11 @@ Fonte: aba "Rules" da competição (acesso restrito a inscritos) + mensagens do 
 > podem ser usados para estimar a chuva de janeiro de 2023. Reorganizar o arquivo para diagnosticar
 > o próprio mês não é previsão."
 
-## Consequências operacionais para o nosso pipeline
+## Consequências operacionais para o pipeline
 
 1. **Corte causal confirmado:** features para o alvo T limitadas a dados até fim de T−1. Nosso
    pipeline já indexa por `time_origem = T−1` (ver `worcap/features.py`) — compliant por construção.
-   Dados externos do próprio mês-alvo T são **proibidos** (resolve P-007: nosso default D-008 era o
+   Dados externos do próprio mês-alvo T são **proibidos** (resolve P-007: o default D-008 era o
    correto).
 2. **Dados externos fora do domínio** explicitamente liberados — legitima ERSSTv5 (Pacífico/Atlântico
    globais), ERA5 MSLP Southern Ocean (fora da grade oficial), NMME/SEAS5 via C3S.

@@ -223,7 +223,7 @@ Cobertura real descoberta:
 
 Aba Rules copiada para `RULES.md` + esclarecimentos do organizador no canal oficial. Fecha P-001
 (equipe ≤4), P-007 (dado externo do mês-alvo **proibido** — "qualquer dado disponível até fim de
-T−1, nada posterior"; nosso pipeline já indexa por `time_origem`=T−1, compliant por construção).
+T−1, nada posterior"; o pipeline já indexa por `time_origem`=T−1, compliant por construção).
 Novidades operacionais: dados fora do domínio e em escala diária/semanal explicitamente legais;
 desempate premia submissão mais antiga; código do vencedor deve ser OSI sem limite comercial →
 adicionado LICENSE MIT. Sem feature obrigatória: formato de saída + causalidade + auditabilidade
@@ -247,7 +247,7 @@ a previsão de T depende apenas de dados ≤ T−1 (4/4 checks verdes).
 
 **Fila 00:00 UTC (5 submits):** blend_v2_d80, blend_v2_65_d80, blend_ridge_v2_65 (sem damping), v05_ridge_all_d80, blend_v2_d70.
 
-*Última atualização: 18/09 23:40 UTC — LB público: 5º (1.69836). Top-2 (1.499/1.576) estatisticamente suspeitos pós-revelação do leak — revisão anunciada pode subir nosso rank real.*
+*Última atualização: 18/09 23:40 UTC — LB público: 5º (1.69836). Top-2 (1.499/1.576) estatisticamente suspeitos pós-revelação do leak — revisão anunciada pode subir meu rank real.*
 
 ### Sessão 8 — Resultados 19/09 00:00 UTC + damping rejeitado
 
@@ -269,11 +269,11 @@ kernel v22 mostrar γ*<1 específico do regime lag-longo. **scripts/report.py** 
 
 ### Sessão 9 — Kernel v26 + sweeps: 3 hipóteses mortas, config confirmado
 
-**Recursão (R2): MORTA** pelo kill-criterion pré-registrado. gap2 vs rec por ano:
+Recursão (R2): morta pelo kill-criterion pré-registrado. gap2 vs rec por ano:
 1983 −0.004, 1988 +0.000, 1997 +0.003, 1998 +0.008, 2005 −0.006, 2010 −0.007, 2015 +0.010
 → média −0.0005 (ruído), só 3/7 melhoram, degradações até +0.010. Critério (≥0.003 e ≥6/7) falhou.
 
-**Janela de climatologia: MORTA.** full é melhor — 30a: +0.026 pior, 20a: +0.046 pior, trend ≡ full.
+Janela de climatologia: morta. full é melhor — 30a: +0.026 pior, 20a: +0.046 pior, trend ≡ full.
 Registro completo 1940-2022 vence (mais amostras ENSO > adaptação de tendência fraca).
 
 **w ótimo diverge OOF vs LB:** OOF prefere w→0.4 (mais v2) em todo o grid; LB prefere 0.65 (mais ridge).

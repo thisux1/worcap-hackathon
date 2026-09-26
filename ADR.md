@@ -190,7 +190,7 @@ O que efetivamente foi produzido diverge do plano em alguns pontos:
 
 ---
 
-## 8. Perguntas abertas para o time
+## 8. Perguntas abertas
 
 Resolvidas pela aba Data: schema do CSV, unidades (mm/dia), grade, período de teste, emissão (features de M−1). Restam (detalhadas em DECISIONS.md — P-001..P-007):
 
