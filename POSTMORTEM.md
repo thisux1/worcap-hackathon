@@ -1,79 +1,73 @@
 # Post-mortem — WORCAP 2026
 
-Resultado: ~1.83875 privado (par `splice_A_b33_24` + `blend_ridge_v2_65`), fora do
-top-10 (corte 1.80337). Vencedor: 1.57992 — gap de ~0.26 RMSE. Este arquivo
-registra onde a diferença nasceu e o que faríamos diferente. Escrito depois do
-encerramento, com o repositório do vencedor (`github.com/Brun0Simoes/Athon`)
-publicado e o debate do canal #duvidas já resolvido pela organização.
+Fechei em ~1.83875 no privado (par `splice_A_b33_24` + `blend_ridge_v2_65`),
+fora do top-10 (corte em 1.80337). O Bruno Simões ganhou com 1.57992. Depois do
+encerramento ele publicou o código (`github.com/Brun0Simoes/Athon`) e a
+organização esclareceu no #duvidas o que era permitido. Escrevi isso pra
+registrar o que eu faria diferente.
 
-## O que venceu
+## O que o Bruno fez
 
-A solução campeã não é estatística pura: é estatística-dinâmica.
+O modelo dele não é estatístico puro. É uma previsão dinâmica com correção
+estatística em cima:
 
-- **Base dinâmica P**: NNLS combinando EOFs do estado atmosférico, regressão por
-  célula, climatologia e anomalia do CFSv2; correção com ensemble GEFS (NOAA);
-  truncado em zero.
-- **SEAS5 como variável central**: anomalia vs a climatologia de hindcast
-  1993-2016 do próprio sistema (SEAS5 e SEAS5.1 têm climatologias separadas).
-- **Corretores aprendem o resíduo** `r = Y − P`: LightGBM + linear + MOS
-  (ridge com vizinhança 3×3, porque modelo global acerta o padrão mas desloca
-  1-2°). Ensemble com pesos por região × estação, encolhidos pra média.
-- Disciplina: blocos de anos, holdout 2020-22, hipóteses pré-registradas,
-  público nunca usado pra escolher modelo. Rede neural no resíduo *piorou* —
-  modelos simples e robustos ganharam.
+- A base P é um NNLS combinando EOFs do estado atmosférico, regressão por
+  célula, climatologia e a anomalia do CFSv2, com correção do ensemble GEFS.
+  Truncado em zero no final.
+- O SEAS5 entra como variável central, como anomalia contra a climatologia do
+  hindcast 1993-2016 do próprio sistema (SEAS5 e SEAS5.1 têm climatologias
+  separadas; misturar cria sinal falso).
+- Os corretores aprendem o resíduo `r = Y − P`: LightGBM, linear e um MOS com
+  ridge na vizinhança 3×3 (modelo global acerta o padrão mas desloca 1-2°).
+  Ensemble com pesos por região e estação, encolhidos pra média.
+- A disciplina era a mesma que a minha: blocos de ano, holdout 2020-22,
+  hipóteses pré-registradas, público nunca usado pra escolher modelo. Vale
+  notar: uma rede neural no resíduo piorou o resultado dele.
 
-O ganho vem de conteúdo de informação: previsão dinâmica carrega a evolução
-atmosférica **dentro** do mês-alvo. Nenhuma feature estatística de T−1 recupera
-isso — é um teto estrutural, não uma questão de tuning.
+O gap não veio de tuning. Veio de conteúdo: a previsão dinâmica carrega a
+evolução atmosférica dentro do mês-alvo, e nenhuma feature estatística de T−1
+recupera isso. É um teto do tipo de informação que eu alimentei o modelo, não
+do modelo em si.
 
-## Onde perdemos (decisões com custo real)
+## Onde eu errei
 
-1. **V3 dinâmica morta no dia 2** (D-003, D-015). Cortamos a via SEAS5/NMME por
-   medo de fila do CDS/MARS. Depois baixamos NMME mesmo assim — e usamos só como
-   feature marginal. O vencedor fez dela a espinha dorsal. O medo da fila se
-   concretizou parcialmente, mas downloads deveriam ter começado no dia 0 em
-   background enquanto o baseline estatístico era construído.
-2. **Causalidade mais estrita que a regra** (D-008). Autoimpusemos "features ≤
-   fim do mês M−1". O critério oficial era ausência de informação *posterior ao
-   mês previsto* — previsão dinâmica inicializada no dia 1 do mês-alvo (lead-0)
-   é legal: ela não observa o mês, prevê. A organização confirmou isso no canal.
-   Nossa leitura conservadora excluiu justamente o sinal decisivo.
-3. **Sequência de experimentos**: gastamos submits e dias em micro-otimizações
-   (γ, damping, blends, λ-sweep — ganhos de ~0.002-0.01) enquanto a alavanca
-   macro (sinal dinâmico) ficou parada em `data_ext/`.
-4. **Teto do stack linear**: ridge + pixel-ridge + compósito ENSO fecha em
-   ~1.84 privado. É honesto, auditável e explicável — mas o regime de 2024
-   precisava de informação que reanálise de T−1 não contém.
+1. Cortei a via dinâmica (V3) no dia 2 por medo da fila do CDS/MARS. Depois
+   acabei baixando NMME mesmo assim, mas usei só como feature marginal numa
+   tabela de 108 colunas. O Bruno fez disso o centro do modelo. A fila era
+   real, mas era custo fixo: era só disparar o download em background no dia 0
+   enquanto eu construía o baseline.
+2. Li a regra de causalidade mais estrita do que ela era. Assumi "features ≤
+   fim do mês M−1" (D-008). O critério oficial era não usar informação
+   posterior ao mês previsto. Um SEAS5 inicializado no dia 1 do mês-alvo não
+   observa o mês, ele prevê. Podia ter usado lead-0 e não usei. Podia ter
+   perguntado no canal no dia 0 e não perguntei.
+3. Gastei submits e dias em micro-otimização (γ, damping, blends, sweep de λ,
+   coisas de 0.002 a 0.01) com a alavanca grande parada em `data_ext/`.
+4. O stack linear fecha em ~1.84 no privado. Honesto e explicável, mas 2024
+   precisava de informação que reanálise de T−1 simplesmente não tem.
 
-## O que faríamos diferente
+## Se fosse de novo
 
-- Dia 0: disparar `baixar_seas5`/`nmme` em background antes de qualquer modelo.
-  Fila de download não é razão para cortar a via — é custo fixo.
-- Tratar previsão dinâmica lead-0/lead-1 como **backbone** (NNLS/multi-modelo:
-  SEAS5 + CFSv2 + GEFS), não como feature em tabela de 108 colunas.
-- MOS por pixel com vizinhança 3×3 (ridge) — o insight de "padrão certo no lugar
-  errado" é o mais barato e provavelmente mais valioso do stack dele.
-- Corretor sobre resíduo em vez de previsão direta da anomalia.
-- Ler a regra de causalidade como "conteúdo informacional", não "data de
-  publicação" — e confirmar com a organização **no dia 0**, não assumir.
-- Mesma disciplina que já tínhamos: blocos/LOYO, holdout intocado, hipótese
-  pré-registrada, público só como confirmação.
+- Dia 0: `baixar_seas5`/`nmme` rodando em background antes de qualquer modelo.
+- Dinâmica como backbone (NNLS com SEAS5 + CFSv2 + GEFS), não como feature.
+- MOS por pixel com vizinhança 3×3. É a ideia mais barata do stack dele e
+  provavelmente a mais valiosa.
+- Corretor no resíduo em vez de prever a anomalia direto.
 
-## O que deu certo (manter)
+## O que eu manteria
 
-- Protocolo anti-leakage (LOYO + embargo, refit por fold) — zero retrabalho de
-  auditoria; código passou na verificação.
-- Hedge estrutural nas finais ({A33, P}): quando o offset overshooteou no
-  privado (β0.33 → 1.84017), o blend sem offset segurou o piso (1.83875).
-- Documentação como artefato do processo (DECISIONS/FINAL_OPTIONS/ADR) —
-  possibilitou reconstruir o porquê de cada escolha, inclusive a errada.
-- O offset ENSO-condicional funcionou de verdade no público (−0.0123) e o modo
-  de falha foi identificado antes de custar (2016 → hedge).
+- O protocolo anti-leakage (LOYO + embargo, refit por fold). Passou na
+  verificação de código sem nenhuma pendência.
+- O hedge nas finais. O β0.33 overshooteou no privado (1.84017) e o blend sem
+  offset segurou o par em 1.83875. A arquitetura barbell fez o que prometia.
+- O offset ENSO funcionou no público (−0.0123) e o modo de falha apareceu no
+  OOF antes de custar nada (2016 → hedge).
+- O DECISIONS como log datado. Sem ele eu não conseguiria escrever esse arquivo
+  nem defender nenhuma escolha na auditoria.
 
-## Lição central
+## Resumo
 
-Validação rigorosa te coloca no pelotão honesto; **conteúdo de informação**
-decide o pódio. Em problema de previsão, a primeira pergunta é "qual fonte de
-dados carrega o estado real do alvo?" — não "qual modelo". As três primeiras
-posições provavelmente todas responderam a primeira pergunta com previsão
-dinâmica. A gente respondeu a segunda com ridge.
+A validação me deixou no pelotão honesto, mas quem subiu no pódio respondeu
+antes "qual fonte de dados carrega o estado real do mês-alvo?" e só depois
+"qual modelo?". Eu fiz as duas perguntas na ordem errada: otimizei o modelo em
+cima de um conjunto de features que não continha a resposta.
