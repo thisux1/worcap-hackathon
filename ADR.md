@@ -1,6 +1,6 @@
 # Registro de Decisão Arquitetural (ADR v4)
 
-**Status:** Proposto — substitui a ADR v3 (incorpora as respostas oficiais da organização — vídeos do Jerônimo e do Carlos — e o enquadramento físico da palestra da Dra. Marília)
+**Status:** Proposto — substitui a ADR v3 (incorpora as respostas oficiais da organização — vídeos de abertura — e o enquadramento físico da palestra técnica do evento)
 
 **Contexto:** Hackathon WorCAP 2026 (INPE), 15–22/09 — previsão da chuva média do mês seguinte (t+1) sobre a América do Sul. **Alvo = o próprio ERA5** (reanálise, não observações). **Métrica = RMSE absoluto sobre precipitação média em mm/dia**, sobre **todos** os pontos de grade e todos os meses do teste. Treino fornecido: **1940–2022**; leaderboard público = **2023**, privado/final = **2024** — 24 meses num único CSV de **1.885.464 linhas**, colunas `id,tp_mm_day`, `id = {ano}_{mes}_{lat}_{lon}` (2 casas decimais, ordem do `sample_submission.csv` — não reconstruir). **Máx. 5 submissões/dia** (confirmado via API), times de até 4 pessoas (confirmar — ver P-001 em DECISIONS.md), 30 h/semana de GPU Kaggle. Dados externos permitidos com citação e **auditoria de código dos finalistas**.
 
@@ -15,7 +15,7 @@
 - **O teste não tem precipitação — o regime de features é assimétrico.** Para cada alvo só há as 9 variáveis atmosféricas do mês M−1; a precipitação observada para em dez/2022. Alvos de 2023 têm lags de chuva 1–12; os de 2024, só 13–24 — a persistência ancora em `tp_ultima_obs` e decai com `lag_meses`. Recursão (previsão própria como input para 2024) é opção a avaliar em OOF com cuidado de propagação de erro. **Dado externo real de 2023–24 existe** (competição em set/2026): features externas ficam restritas a ≤ fim de M−1 por segurança de auditoria (DECISIONS D-008; usar dado do próprio mês-alvo só se a organização liberar — P-007).
 - **RMSE absoluto muda o centro de gravidade do erro.** A métrica é sobre mm/dia, não sobre anomalia. Como a saída é `ŷ = clim + σ·ẑ`, **a climatologia deixa de ser baseline e vira o maior componente do modelo** — erro na média histórica de um pixel tropical chuvoso na estação úmida degrada o RMSE diretamente. O refit de climatologia por fold é o ponto mais sensível a leakage do pipeline inteiro (§4-V0, §5).
 - **O alvo é o próprio ERA5.** Não há correção de viés contra observações a aprender: o problema é capturar a dinâmica interna de persistência/transição do ERA5. CHIRPS/MSWEP/estações perdem o papel corretivo — no máximo parágrafo de diagnóstico no relatório.
-- **Previsibilidade vem do oceano — confirmado pela física.** Dra. Marília: a atmosfera perde memória em ~10–14 dias (regime caótico); o oceano, pela inércia térmica, retém memória por meses → **SST global e teleconexões oceânicas são a âncora correta**. Nuance regional dela: Amazônia/Centro-Oeste dominados por convecção termodinâmica local rápida (subgrade, difícil de parametrizar → teto de skill baixo); Sul responde com clareza a forçantes dinâmicas frontais e ENSO → **segmentar métricas por macro-região e regime não é cosmético, é física**.
+- **Previsibilidade vem do oceano — confirmado pela física.** A palestra técnica do evento: a atmosfera perde memória em ~10–14 dias (regime caótico); o oceano, pela inércia térmica, retém memória por meses → **SST global e teleconexões oceânicas são a âncora correta**. Nuance regional dela: Amazônia/Centro-Oeste dominados por convecção termodinâmica local rápida (subgrade, difícil de parametrizar → teto de skill baixo); Sul responde com clareza a forçantes dinâmicas frontais e ENSO → **segmentar métricas por macro-região e regime não é cosmético, é física**.
 - **A armadilha de 2023 é desenhada.** LB público = 2023 (transição rápida La Niña → Super El Niño); privado = 2024 (dinâmica distinta). Afinar hiperparâmetros ou pesos de stacker no LB público = queda livre no privado. **CV temporal (LOYO + embargo) decide; LB só confirma** (§5).
 - **O teste é 100% real-time para todos os dinâmicos.** 2023–2024 está além de qualquer hindcast C3S/NMME → a calibração treinada em hindcast precisa transferir para realtime (membros e climatologias de referência diferentes). Risco que era hipótese na v3 agora é certeza — reforça o debias paramétrico conservador e o kill-switch (§4-V3).
 - **Previsões dinâmicas sazonais prontas continuam sendo a feature externa mais forte** (lição do *Subseasonal Climate Forecast Rodeo*: MultiLLR + AutoKNN + dinâmico debiased; precipitação ganha por MLP ensemble sobre features oceânicas incl. SSS) — mas com custo operacional alto sob prazo de maratona: tratada como via **condicional**, não como espinha dorsal (§4-V3).
@@ -152,7 +152,7 @@ O que efetivamente foi produzido diverge do plano em alguns pontos:
 
 - **CV temporal:** LOYO com **embargo ±1 ano** (features lag-12 embutem estado do ano-teste). **Nunca shuffle.** Holdout interno congelado = últimos ~5 anos do treino (≈2018–2022), intocado até a seleção final.
 - **Refit por fold:** climatologia e σ, EOFs de SST, debias do V3, pool de análogos, scalers — tudo recalculado sem os anos do fold. A climatologia é o item mais sensível agora que a métrica é absoluta.
-- **Painel de métricas:** RMSE absoluto (a oficial) + ACC temporal por pixel, MSSS vs. climatologia e persistência, taxa de acerto de tercil, **breakdown por macro-região (Amazônia, NEB, Centro-Oeste, Sul/SESA), mês-calendário e fase ENSO** — a assimetria convectiva×dinâmica da Dra. Marília vira diagnóstico obrigatório — e **bootstrap por bloco-ano** para IC de diferenças entre vias.
+- **Painel de métricas:** RMSE absoluto (a oficial) + ACC temporal por pixel, MSSS vs. climatologia e persistência, taxa de acerto de tercil, **breakdown por macro-região (Amazônia, NEB, Centro-Oeste, Sul/SESA), mês-calendário e fase ENSO** — a assimetria convectiva×dinâmica apontada na palestra vira diagnóstico obrigatório — e **bootstrap por bloco-ano** para IC de diferenças entre vias.
 - **Anti-armadilha-2023 (regra explícita):** o LB público mede um ano de transição ENSO extrema; o privado mede outro regime. **CV temporal decide modelo, hiperparâmetros e pesos de stacker; os 3 submits/dia servem para confirmar CV e testar infra, nunca para hill-climbing.** Submissões finais escolhidas por OOF + diversidade estrutural entre vias. Registrar no log: submit ↔ git hash ↔ OOF ↔ score LB.
 - **Datas de emissão:** whitelist de start dates (§4-V3); log de disponibilidade por feature (§3.5).
 
@@ -163,7 +163,7 @@ O que efetivamente foi produzido diverge do plano em alguns pontos:
 - **OOF prediction store:** cada via grava parquet `(data, lat, lon, pred, fold, via)` versionado — sem isso o stacking não existe.
 - **Manifesto de folds** fixo em disco + **log de submits** (submit ↔ git hash ↔ OOF ↔ LB).
 - **Writer/validator do CSV de submissão** (~943k linhas/ano): ID exato `{ano}_{mes}_{latitude}_{longitude}`, formatação de float de lat/lon **igual** à do sample_submission, contagem de linhas, NaN check, clip ≥0. Validar antes do primeiro submit — o V0 do dia 1 existe em grande parte para testar esse caminho de ponta a ponta.
-- **Pronto para auditoria (requisito de ranking):** repo organizado, README de reprodução ponta-a-ponta, `environment.yml` pinado, seeds fixas, **manifesto de dados externos** (fonte, licença, URL, data de download, hash) e downloader C3S com manifesto/retry — se usarmos dados externos, o pipeline de download+prep precisa ser reproduzível e documentado, como frisado pelo Jerônimo.
+- **Pronto para auditoria (requisito de ranking):** repo organizado, README de reprodução ponta-a-ponta, `environment.yml` pinado, seeds fixas, **manifesto de dados externos** (fonte, licença, URL, data de download, hash) e downloader C3S com manifesto/retry — se usarmos dados externos, o pipeline de download+prep precisa ser reproduzível e documentado, como frisado pela organização.
 - Máscara terra/oceano + política de fill de SST; hashes dos zarr intermediários.
 - Seeds/bagging temporal no GBM; suavização espacial opcional na saída.
 - GPU Kaggle (30 h/sem, ≤12 h/sessão) existe, mas **não reabre** os moonshots — serve para batch scoring/GBM-GPU se necessário.
@@ -194,7 +194,7 @@ O que efetivamente foi produzido diverge do plano em alguns pontos:
 
 Resolvidas pela aba Data: schema do CSV, unidades (mm/dia), grade, período de teste, emissão (features de M−1). Restam (detalhadas em DECISIONS.md — P-001..P-007):
 
-1. **Tamanho do time:** vídeo diz ≤4, LinkedIn oficial diz ≤3 — confirmar na aba Rules/Discord.
+1. **Tamanho do time:** material de divulgação diz ≤4, post oficial diz ≤3 — confirmar na aba Rules.
 2. **Dado externo do próprio mês-alvo** (SST observada de jan/2023 p/ prever jan/2023): permitido? Default = não usar (causal ≤M−1).
 3. **Formato de citação exigido** para dados externos + escopo da auditoria de código (aba Rules).
 4. **Recursão de previsão** como feature para 2024: avaliar em OOF (risco de propagação de erro) — decisão interna, não de regra.
@@ -203,7 +203,7 @@ Resolvidas pela aba Data: schema do CSV, unidades (mm/dia), grade, período de t
 
 ## Apêndice — Fontes consultadas
 
-- **Regras e formato confirmados:** vídeos de organização do hackathon (Jerônimo; Carlos) — métrica RMSE absoluto, alvo ERA5, treino 1940–2022, LB público 2023 / privado 2024, CSV `ID={ano}_{mes}_{lat}_{lon}`, 3 submits/dia, times ≤4, auditoria de código; palestra da Dra. Marília — memória atmosférica ~10–14 dias vs. oceano meses, convecção subgrade na Amazônia/Centro-Oeste, resposta frontal/ENSO no Sul, ERA5 como reanálise acoplada
+- **Regras e formato confirmados:** vídeos de abertura da organização — métrica RMSE absoluto, alvo ERA5, treino 1940–2022, LB público 2023 / privado 2024, CSV `ID={ano}_{mes}_{lat}_{lon}`, 3 submits/dia, times ≤4, auditoria de código; palestra técnica do evento — memória atmosférica ~10–14 dias vs. oceano meses, convecção subgrade na Amazônia/Centro-Oeste, resposta frontal/ENSO no Sul, ERA5 como reanálise acoplada
 - Subseasonal Climate Forecast Rodeo: Hwang et al. (KDD'19, arXiv 1809.07394) — vencedor: MultiLLR + AutoKNN + dinâmico debiased; precipitação: ensemble de MLPs sobre features oceânicas incl. SSS (Team Salient)
 - Pinheiro & Ouarda, "An interpretable machine learning model for seasonal precipitation forecasting" (Comms. Earth & Env. 2025) — TelNet (avaliado no Ceará, escala sazonal)
 - Pinheiro & Ouarda, "Enhancing machine learning-based seasonal precipitation forecasting using CMIP6 simulations" (Atmos. Research 2025)

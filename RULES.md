@@ -1,7 +1,7 @@
 # Regras da Competição — WORCAP 2026 (transcrição da aba Rules + esclarecimentos oficiais)
 
-Fonte: aba "Rules" da competição (acesso restrito a inscritos) + mensagens do organizador
-(geronimo.lemos) no canal oficial, transcritas em 18/09/2026.
+Fonte: aba "Rules" da competição (acesso restrito a inscritos) + esclarecimentos do
+organizador no canal oficial de dúvidas, consolidados em 18–19/09/2026.
 
 ## Regras específicas (COMPETITION-SPECIFIC TERMS)
 
@@ -30,30 +30,24 @@ Fonte: aba "Rules" da competição (acesso restrito a inscritos) + mensagens do 
 
 ## Esclarecimentos do organizador (canal oficial)
 
-**Anúncio de abertura (19h11):**
-> "dado o estado atmosférico observado de um mês, prever a precipitação média do mês seguinte,
-> em mm/dia, em cada ponto da grade sobre a América do Sul. Vocês recebem dez variáveis do ERA5
-> em resolução de 0,25°, de 1940 a 2022, para treinar. A avaliação cobre 24 meses: 2023 alimenta
-> o placar público durante a semana e 2024 decide o resultado final. Métrica única: RMSE sobre a
-> chuva absoluta. Equipes de até 4 pessoas, 3 envios por dia. Dados externos são liberados, desde
-> que públicos e declarados."
-
-**Correção de limite (12h12):**
-> "haviámos informado, de forma equivocada, que o limite de envios diário seria 3. Na verdade,
-> é possível realizar 5 submissões por dia."
-
-**Regra de causalidade — esclarecimento explícito (19h15):**
-> "para prever um mês T, vale qualquer dado que em tese estaria disponível até o fim do mês T−1.
-> Nada posterior a isso. Na prática, para prever fevereiro de 2023 você pode usar tudo até janeiro
-> daquele ano, como os campos que já vêm no teste_features.nc, dados externos em escala diária ou
-> semanal, índices climáticos, informação de fora do domínio. Daí decorre uma consequência que vale
-> explicitar: os campos de janeiro de 2023, que vêm no arquivo como preditores de fevereiro, não
-> podem ser usados para estimar a chuva de janeiro de 2023. Reorganizar o arquivo para diagnosticar
-> o próprio mês não é previsão."
+- **Anúncio de abertura:** dado o estado atmosférico observado de um mês, prever a
+  precipitação média do mês seguinte, em mm/dia, em cada ponto da grade sobre a América do Sul.
+  Dez variáveis do ERA5 em 0,25°, de 1940 a 2022, para treino. A avaliação cobre 24 meses: 2023
+  alimenta o placar público durante a semana e 2024 decide o resultado final. Métrica única:
+  RMSE sobre a chuva absoluta. Equipes de até 4 pessoas. Dados externos liberados, desde que
+  públicos e declarados.
+- **Limite de envios:** anunciado inicialmente como 3/dia; corrigido oficialmente para 5/dia.
+- **Regra de causalidade — esclarecimento explícito:** para prever um mês T, vale qualquer dado
+  que em tese estaria disponível até o fim do mês T−1; nada posterior. Na prática, para prever
+  fevereiro de 2023 pode-se usar tudo até janeiro daquele ano: os campos que já vêm no
+  teste_features.nc, dados externos em escala diária ou semanal, índices climáticos, informação
+  de fora do domínio. Consequência explicitada pela organização: os campos de janeiro de 2023,
+  que vêm no arquivo como preditores de fevereiro, não podem ser usados para estimar a chuva de
+  janeiro de 2023 — reorganizar o arquivo para diagnosticar o próprio mês não é previsão.
 
 ## Consequências operacionais para o pipeline
 
-1. **Corte causal confirmado:** features para o alvo T limitadas a dados até fim de T−1. Nosso
+1. **Corte causal confirmado:** features para o alvo T limitadas a dados até fim de T−1. O
    pipeline já indexa por `time_origem = T−1` (ver `worcap/features.py`) — compliant por construção.
    Dados externos do próprio mês-alvo T são **proibidos** (resolve P-007: o default D-008 era o
    correto).
@@ -65,38 +59,36 @@ Fonte: aba "Rules" da competição (acesso restrito a inscritos) + mensagens do 
 5. **Licença:** repo licenciado MIT (LICENSE incluído) — satisfaz a exigência OSI do vencedor.
 6. **Desempate por antiguidade:** submeter candidatos fortes cedo, não só no último dia.
 
-## Esclarecimentos do canal #duvidas (transcritos 18/09)
+## Esclarecimentos adicionais do canal oficial (18/09)
 
-- **Dados externos — escopo confirmado (12h40):** outras variáveis ERA5, outras reanálises e dados
-  de observação são permitidos, "desde que bem documentados"; a comissão avalia as submissões ALÉM
-  da métrica final.
-- **Autorregressão (12h46):** "a previsão será sempre para o mês seguinte"; modelo autorregressivo
-  ou não é decisão da equipe → usar previsões próprias como input para alvos de 2024 é legal.
-- **Copernicus/SEAS5 com cadastro gratuito (19h02):** confirmado explicitamente — "são dados
-  públicos, pode fazer o download e utilizar". Fecha a dúvida de acessibilidade do manifesto.
-- **Escala temporal externa (1h19):** dados semanais/diários anteriores ao mês previsto são legais;
+- **Dados externos — escopo confirmado:** outras variáveis ERA5, outras reanálises e dados de
+  observação são permitidos desde que bem documentados; a comissão avalia as submissões além da
+  métrica final.
+- **Autorregressão:** a previsão é sempre para o mês seguinte; usar ou não um modelo
+  autorregressivo é decisão da equipe — previsões próprias como input para alvos de 2024 são
+  legais.
+- **Copernicus/SEAS5 com cadastro gratuito:** confirmado explicitamente que são dados públicos,
+  livres para download e uso. Fecha a dúvida de acessibilidade do manifesto.
+- **Escala temporal externa:** dados semanais/diários anteriores ao mês previsto são legais;
   áreas fora do domínio da América do Sul podem ser input.
-- **Vazamento do teste_features (18h55–19h02):** reportado publicamente que os campos atmosféricos
-  do mês-alvo de uma linha aparecem como time_origem da linha seguinte (23/24 alvos exploráveis).
-  Resposta oficial: "nós sabemos dessa limitação, por isso vamos revisar as submissões feitas" —
-  haverá revisão das submissões por leakage.
-- **Entregáveis (9h38):** acesso ao código ao término; plataforma livre; **não haverá pitch**.
+- **Vazamento do teste_features:** foi reportado publicamente que os campos atmosféricos do
+  mês-alvo de uma linha aparecem como time_origem da linha seguinte (23/24 alvos exploráveis).
+  A organização respondeu que já conhecia a limitação e que revisaria as submissões por leakage.
+- **Entregáveis:** acesso ao código ao término; plataforma livre; sem pitch.
 - **Prazo:** competição aberta até 23/09.
 - **Certificado de participação** para todos os participantes.
 
-## Esclarecimento adicional (19/09, canal #duvidas)
+## Esclarecimento adicional (19/09, canal oficial)
 
-Alexandre C. A. levantou que os dados de avaliação (2023-24) são públicos via ERA5/Copernicus —
-hiperparâmetros podem ser ajustados sobre o próprio teste. Resposta oficial (geronimo.lemos):
-
-> "Sim, os dados são públicos... A forma como encontramos para tentar mitigar esse problema é
-> revisar as submissões e criar um conjunto público e privado (embora ambos sejam públicos).
-> [...] deixamos as regras bem claras [...] e esperamos que todos as sigam. Obviamente, faremos
-> o que está ao nosso alcance para tentar garantir isso. Último comentário sobre overfit:
-> a preocupação é genuína e isso é um problema em várias competições públicas do Kaggle."
+Foi levantado no canal oficial que os dados de avaliação (2023-24) são públicos via
+ERA5/Copernicus — hiperparâmetros poderiam ser ajustados sobre o próprio teste. A resposta da
+organização: sim, os dados são públicos; a mitigação adotada é a revisão das submissões e a
+separação entre conjunto público e privado (embora ambos sejam públicos), com a expectativa de
+que as regras sejam seguidas e a ressalva explícita de que overfit é uma preocupação genuína e
+comum em competições públicas do Kaggle.
 
 **Consequência:** a organização reconhece oficialmente que a separação público/privado é nominal
 (os dois anos existem no ERA5) — a única defesa real é a revisão de código/causalidade. Isso
 eleva o valor de: (a) documentação de causalidade (test_invariance, DATA_MANIFESTO), (b) método
-OOF-first com submits só de confirmação — auditável e defensável, (c) NÃO usar ERA5 2023-24 de
+OOF-first com submits só de confirmação — auditável e defensável, (c) não usar ERA5 2023-24 de
 tp em qualquer etapa (inclusive seleção de submits = peeking no privado).
